@@ -1,0 +1,28 @@
+{
+  "name": "shell-loader",
+  "version": "0.0.0",
+  "description": "generates execable arrays from spec files",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava index.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machellerogden/shell-loader.git"
+  },
+  "author": {
+    "name": "Mac Heller-Ogden",
+    "email": "mac@machellerogden.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "ava": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=10.6.0",
+    "npm": ">=5.0.0"
+  }
+}
