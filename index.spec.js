@@ -4,8 +4,8 @@ import ShellLoader from '.';
 test('basics shallow', t => {
     const spec = {
         main: {
+            command: 'aws',
             args: [
-                'aws',
                 {
                     name: 'debug',
                     type: 'option'
@@ -13,50 +13,41 @@ test('basics shallow', t => {
                 {
                     name: 'endpoint-url',
                     type: 'option'
+                },
+                {
+                    main: {
+                        command: 's3',
+                        args: [
+                            {
+                                main: {
+                                    command: 'cp',
+                                    args: [
+                                        {
+                                            name: 'src',
+                                            type: 'option'
+                                        },
+                                        {
+                                            name: 'dest',
+                                            type: 'option'
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
                 }
             ]
-        },
-        subs: [
-            {
-                main: {
-                    args: [
-                        's3'
-                    ]
-                },
-                subs: [
-                    {
-                        main: {
-                            args: [
-                                {
-                                    name: 'cp',
-                                    type: 'option'
-                                },
-                                {
-                                    name: 'src',
-                                    type: 'option'
-                                },
-                                {
-                                    name: 'dest',
-                                    type: 'option'
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        ]
+        }
     };
 
-    const loader = ShellLoader(spec);
+    const loader = ShellLoader({ spec });
 
     const input = {
-        aws: {
-            debug: true,
-            s3: {
-                cp: {
-                    src: './foo',
-                    dest: './bar'
-                }
+        debug: true,
+        s3: {
+            cp: {
+                src: './foo',
+                dest: './bar'
             }
         }
     };
@@ -64,6 +55,7 @@ test('basics shallow', t => {
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
     const argv = loader(input);
+    console.log('argv', argv);
 
     t.deepEqual(argv, output);
 });
