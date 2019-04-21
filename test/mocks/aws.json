@@ -1,0 +1,40 @@
+{
+    "kind": "shell",
+    "spec": {
+        "main": {
+            "command": "aws",
+            "args": [
+                {
+                    "name": "debug",
+                    "type": "option"
+                },
+                {
+                    "name": "endpoint-url",
+                    "type": "option"
+                },
+                {
+                    "main": {
+                        "command": "s3",
+                        "args": [
+                            {
+                                "main": {
+                                    "command": "cp",
+                                    "args": [
+                                        {
+                                            "name": "src",
+                                            "type": "option"
+                                        },
+                                        {
+                                            "name": "dest",
+                                            "type": "option"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
