@@ -10,18 +10,20 @@ const isNumber = n => numberTypes.has(typeof n) && !isNaN(parseInt(n, 10)) && is
 
 function parseArgs(args, config) {
     if (args == null) throw new Error('invalid arguments');
-    if (typeof args === 'string') return args;
     if (Array.isArray(args)) return args.map(v => parseArgs(v, config));
     if (args.command) {
+        console.log('args.command', args.command);
+        console.log('config', config);
         if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
-        return [ args.command, ...parseArgs(args.args || [], config[args.command]) ];
+        return [ args.command, ...parseArgs(args.args || [], config[args.command] || {}) ];
     }
+    if (typeof args === 'string') args = { name: args };
     if (config[args.name]) {
         let { name, type = 'option' } = args;
         const value = String(config[name]);
         let result;
         switch (type) {
-            case 'command':
+            case 'value':
                 result = name;
                 break;
             case 'option':
@@ -30,8 +32,11 @@ function parseArgs(args, config) {
             case 'flag':
                 result = `-${name}`;
                 break;
+            case 'variable':
+                config[type] = value;
+                return;
             default:
-                throw new Error('invalid argument type');
+                throw new Error(`invalid argument type: ${type}`);
         }
         return result;
     }

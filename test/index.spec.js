@@ -57,7 +57,7 @@ test('docker 1', t => {
         }
     };
 
-    const output = [ 'docker', 'build', '-t', 'foo:latest', '.' ];
+    const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
     const argv = loader(input);
 
