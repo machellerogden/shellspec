@@ -2,8 +2,9 @@ import test from 'ava';
 import ShellLoader from '..';
 
 import aws from './mocks/aws';
+import docker from './mocks/docker';
 
-test('basics 1', t => {
+test('aws 1', t => {
 
     const loader = ShellLoader(aws);
 
@@ -24,7 +25,7 @@ test('basics 1', t => {
     t.deepEqual(argv, output);
 });
 
-test('basics 2', t => {
+test('aws 2', t => {
 
     const loader = ShellLoader(aws);
 
@@ -38,6 +39,25 @@ test('basics 2', t => {
     };
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
+
+    const argv = loader(input);
+
+    t.deepEqual(argv, output);
+});
+
+test('docker 1', t => {
+
+    const loader = ShellLoader(docker);
+
+    const input = {
+        build: {
+            name: 'foo',
+            version: 'latest',
+            context: '.'
+        }
+    };
+
+    const output = [ 'docker', 'build', '-t', 'foo:latest', '.' ];
 
     const argv = loader(input);
 
