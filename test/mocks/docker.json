@@ -7,12 +7,6 @@
                 "command": "build",
                 "args": [
                     {
-                        "name": "tag",
-                        "type": "option",
-                        "derived": "true",
-                        "template": "${registry ? `${registry}/` : ''}${name}:${version}"
-                    },
-                    {
                         "name": "registry",
                         "type": "variable"
                     },
@@ -24,6 +18,11 @@
                         "name": "version",
                         "default": "latest",
                         "type": "variable"
+                    },
+                    {
+                        "name": "tag",
+                        "type": "template",
+                        "template": [ "--tag", "${registry ? `${registry}/` : ''}${name}:${version}" ]
                     },
                     "add-host",
                     "build-arg",
