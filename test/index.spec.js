@@ -4,7 +4,7 @@ import ShellLoader from '..';
 import aws from './mocks/aws';
 import docker from './mocks/docker';
 
-test('aws 1', t => {
+test('aws 1', async t => {
 
     const loader = ShellLoader(aws);
 
@@ -20,12 +20,12 @@ test('aws 1', t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
-    const argv = loader('aws.s3.cp', input);
+    const argv = await loader('aws.s3.cp', input);
 
     t.deepEqual(argv, output);
 });
 
-test('aws 2', t => {
+test('aws 2', async t => {
 
     const loader = ShellLoader(aws);
 
@@ -40,12 +40,12 @@ test('aws 2', t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
 
-    const argv = loader('aws.s3.cp', input);
+    const argv = await loader('aws.s3.cp', input);
 
     t.deepEqual(argv, output);
 });
 
-test('docker 1', t => {
+test('docker 1', async t => {
 
     const loader = ShellLoader(docker);
 
@@ -53,14 +53,13 @@ test('docker 1', t => {
         build: {
             name: 'foo',
             version: 'latest',
-            registry: 'abc',
             context: '.'
         }
     };
 
-    const output = [ 'docker', 'build', '--tag', 'abc/foo:latest', '.' ];
+    const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
-    const argv = loader('docker.build', input);
+    const argv = await loader('docker.build', input);
 
     t.deepEqual(argv, output);
 });

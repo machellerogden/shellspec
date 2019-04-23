@@ -2,27 +2,37 @@
     "kind": "shell",
     "spec": {
         "command": "docker",
+        "collections": {
+            "tag": [
+                {
+                    "name": "registry",
+                    "type": "variable",
+                    "default": ""
+                },
+                {
+                    "name": "name",
+                    "type": "variable",
+                    "required": true
+                },
+                {
+                    "name": "version",
+                    "default": "latest",
+                    "type": "variable"
+                },
+                {
+                    "name": "tag",
+                    "type": "template",
+                    "template": [ "--tag", "${registry ? `${registry}/` : ''}${name}:${version}" ]
+                }
+            ]
+        },
         "args": [
             {
                 "command": "build",
                 "args": [
                     {
-                        "name": "registry",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "name",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "version",
-                        "default": "latest",
-                        "type": "variable"
-                    },
-                    {
                         "name": "tag",
-                        "type": "template",
-                        "template": [ "--tag", "${registry ? `${registry}/` : ''}${name}:${version}" ]
+                        "type": "collection"
                     },
                     "add-host",
                     "build-arg",
@@ -164,22 +174,7 @@
                     "workdir",
                     {
                         "name": "tag",
-                        "type": "value",
-                        "derived": true,
-                        "template": "${registry ? `${registry}/` : ''}${name}:${version}"
-                    },
-                    {
-                        "name": "registry",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "name",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "version",
-                        "default": "latest",
-                        "type": "variable"
+                        "type": "set"
                     },
                     {
                         "name": "command",
@@ -197,22 +192,7 @@
                     },
                     {
                         "name": "tag",
-                        "type": "value",
-                        "derived": true,
-                        "template": "${registry ? `${registry}/` : ''}${name}:${version}"
-                    },
-                    {
-                        "name": "registry",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "name",
-                        "type": "variable"
-                    },
-                    {
-                        "name": "version",
-                        "type": "variable",
-                        "default": "latest"
+                        "type": "set"
                     }
                 ]
             }

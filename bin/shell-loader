@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+'use strict';
+
+const ShellLoader = require('..');
+const { readFileSync } = require('fs');
+const Answers = require('answers');
+
+(async () => {
+    const config = await Answers({ name: 'shell_loader' });
+    const data = readFileSync(config._[0], 'utf8');
+    console.log('data', data);
+    if (data != null) {
+        let spec;
+        try {
+            spec = JSON.parse(data);
+        } catch (e) {
+            process.stderr.write('{"error":"invalid JSON"}');
+        }
+        const loader = ShellLoader(spec);
+        const result = await loader(config._[1], config);
+        process.stdout.write(result.join(' '));
+    }
+})();
