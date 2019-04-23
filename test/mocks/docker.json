@@ -6,8 +6,7 @@
             "tag": [
                 {
                     "name": "registry",
-                    "type": "variable",
-                    "default": ""
+                    "type": "variable"
                 },
                 {
                     "name": "name",
@@ -174,7 +173,7 @@
                     "workdir",
                     {
                         "name": "tag",
-                        "type": "set"
+                        "type": "collection"
                     },
                     {
                         "name": "command",
@@ -192,7 +191,7 @@
                     },
                     {
                         "name": "tag",
-                        "type": "set"
+                        "type": "collection"
                     }
                 ]
             }

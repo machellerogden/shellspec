@@ -2,43 +2,98 @@
 
 module.exports = ShellLoader;
 
-const evaluate = require('./evaluate');
 const inquirer = require('inquirer');
+const merge = require('deepmerge');
 
-const numberTypes = new Set(['string', 'number']);
-const isNumber = n => numberTypes.has(typeof n) && !isNaN(parseInt(n, 10)) && isFinite(n);
+const evaluate = require('./evaluate');
 
-async function parseArgs(cmdPath, args, config, collections = {}) {
+const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([ ...(await chain), await fn() ]), Promise.resolve([]));
+
+const getCollections = (obj, acc = {}) => typeof obj === 'object'
+    ? Array.isArray(obj)
+        ? { ...acc, ...obj.reduce((a, v) => getCollections(v, a), {}) }
+        : { ...acc, ...Object.entries(obj).reduce((a, [ k, v ]) => (k === 'collections') ? { ...a, ...v } : getCollections(v, a), {}) }
+    : acc;
+
+function populateCollections(obj) {
+    const acc = { ...obj };
+    const collections = getCollections(obj);
+
+    function walk(value) {
+        return typeof value === 'object'
+            ? Array.isArray(value)
+                ? value.map(v => walk(v))
+                : Object.entries(value).reduce((a, [ k, v ]) => {
+                    a[k] = (k === 'args')
+                        ? v.reduce((aa, arg) => {
+                              if (arg.type === 'collection' && collections[arg.name]) return [ ...aa, ...walk(collections[arg.name]) ];
+                              return [ ...aa, walk(arg) ];
+                          }, [])
+                        : walk(v);
+                    return a;
+                }, {})
+            : value;
+    }
+
+    return walk(acc);
+}
+
+function prompts(acc, cmdPath, args, config, cmdKey) {
     if (args == null) throw new Error('invalid arguments');
-    if (Array.isArray(args)) return await Promise.all(args.map(async v => await parseArgs(cmdPath, v, config, collections)));
+
+    if (Array.isArray(args)) return [ ...acc, ...args.reduce((a, v) => [ ...a, ...prompts(acc, cmdPath, v, config, cmdKey) ], acc) ];
+
     if (args.command && cmdPath[0] === args.command) {
         if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
-        const nextArgs = await parseArgs(cmdPath.slice(1), args.args || [], config[args.command] || {}, { ...collections, ...(args.collections || {}) });
-        return [ args.command, ...nextArgs ];
+        const nextCmdPath = cmdPath.slice(1);
+        const nextConfig = config[args.command] || {};
+        const nextArgs = args.args || [];
+        return [ ...acc, ...prompts(acc, nextCmdPath, nextArgs, nextConfig, cmdKey) ];
     }
+
     if (typeof args === 'string') args = { name: args };
-    config[args.name] = config[args.name] || args.default;
+
     if (config[args.name] == null && args.required) {
-        const userInput = await inquirer.prompt([{
-            name: args.name,
+        const name = `${cmdKey}.${args.name}`;
+        return [ ...acc, () => inquirer.prompt([{
+            name,
             type: 'input',
-            message: args.name
-        }]);
-        config[args.name] = userInput[args.name];
+            message: name
+        }]) ];
     }
-    if (config[args.name] || [ 'collection', 'variable', 'template' ].includes(args.type)) {
+
+    return acc;
+}
+
+function parseArgs(acc, cmdPath, args, config) {
+    if (args == null) throw new Error('invalid arguments');
+
+    if (Array.isArray(args)) return [ ...acc, ...args.reduce((a, v) => [ ...a, ...parseArgs(acc, cmdPath, v, config) ], acc) ];
+
+    if (args.command && cmdPath[0] === args.command) {
+        if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
+        const nextCmdPath = cmdPath.slice(1);
+        const nextConfig = config[args.command] || {};
+        const nextArgs = args.args || [];
+        return [ ...acc, args.command, ...parseArgs(acc, nextCmdPath, nextArgs, nextConfig) ];
+    }
+
+    if (typeof args === 'string') args = { name: args };
+
+    if (args.default) config[args.name] = args.default;
+
+    if (config[args.name] || [ 'variable', 'template' ].includes(args.type)) {
         let { name, type = 'option' } = args;
-        const value = String(config[name]);
+        const value = config[name] != null
+            ? String(config[name])
+            : null;
         let result;
         switch (type) {
-            case 'collection':
-                result = await Promise.all((collections[name] || []).map(async coll => await parseArgs(cmdPath, coll, config, collections)));
-                break;
             case 'value':
                 result = value;
                 break;
             case 'option':
-                result = [ `--${name}`, value ];
+                result = `--${name}`;
                 break;
             case 'flag':
                 result = `-${name}`;
@@ -54,9 +109,9 @@ async function parseArgs(cmdPath, args, config, collections = {}) {
             default:
                 throw new Error(`invalid argument type: ${type}`);
         }
-        return result;
+        if (result != null) return [ ...acc, ...(Array.isArray(result) ? result : [ result ]) ];
     }
-    return;
+    return acc;
 }
 
 function ShellLoader(definition) {
@@ -67,12 +122,11 @@ function ShellLoader(definition) {
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
 
     let command;
-    let collections = {};
 
     if (!Array.isArray(spec)) {
         if (!spec.command) throw new Error('invalid spec - missing main command definition');
+        spec = populateCollections(spec);
         command = spec.command;
-        collections = spec.collections;
         spec = spec.args || [];
     } else {
         command = spec[0];
@@ -81,9 +135,10 @@ function ShellLoader(definition) {
 
     async function loader(cmdPath, config = {}) {
         cmdPath = Array.isArray(cmdPath)
-            ? cmdPath
-            : cmdPath.split('.');
-        const args = (await parseArgs(cmdPath.slice(1), spec, config, collections)).flat(Infinity).filter(v => v);
+            ? cmdPath.slice(1)
+            : cmdPath.split('.').slice(1);
+        const answers = await seq(prompts([], cmdPath, spec, config, cmdPath.join('.')));
+        const args = parseArgs([], cmdPath, spec, merge(config, ...answers));
         return [ command, ...args ];
     }
 
