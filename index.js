@@ -138,7 +138,7 @@ function ShellLoader(definition) {
             ? cmdPath.slice(1)
             : cmdPath.split('.').slice(1);
         const answers = await seq(prompts([], cmdPath, spec, config, cmdPath.join('.')));
-        const args = parseArgs([], cmdPath, spec, merge(config, ...answers));
+        const args = parseArgs([], cmdPath, spec, merge(config, ...(answers.length ? answers : [{}])));
         return [ command, ...args ];
     }
 

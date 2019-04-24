@@ -1,0 +1,21 @@
+{
+    "kind": "shell",
+    "spec": {
+        "command": "git",
+        "args": [
+            {
+                "command": "clone",
+                "args": [
+                    {
+                        "name": "url",
+                        "type": "value"
+                    },
+                    {
+                        "name": "dest",
+                        "type": "value"
+                    }
+                ]
+            }
+        ]
+    }
+}
