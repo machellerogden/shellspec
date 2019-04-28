@@ -20,7 +20,7 @@ test('aws 1', async t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
-    const argv = await loader('aws.s3.cp', input);
+    const argv = await loader(input, { name: 'aws.s3.cp' });
 
     t.deepEqual(argv, output);
 });
@@ -40,7 +40,7 @@ test('aws 2', async t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
 
-    const argv = await loader('aws.s3.cp', input);
+    const argv = await loader(input, { name: 'aws.s3.cp' });
 
     t.deepEqual(argv, output);
 });
@@ -59,7 +59,7 @@ test('docker 1', async t => {
 
     const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
-    const argv = await loader('docker.build', input);
+    const argv = await loader(input, { name: 'docker.build' });
 
     t.deepEqual(argv, output);
 });

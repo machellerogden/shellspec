@@ -15,6 +15,22 @@
                         "type": "value"
                     }
                 ]
+            },
+            {
+                "command": "rev-parse",
+                "args": [
+                    {
+                        "name": "short",
+                        "type": "option",
+                        "useEquals": "true",
+                        "default": 12
+                    },
+                    {
+                        "name": "refspec",
+                        "type": "value",
+                        "default": "HEAD"
+                    }
+                ]
             }
         ]
     }

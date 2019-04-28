@@ -4,7 +4,6 @@ module.exports = ShellLoader;
 
 const inquirer = require('inquirer');
 const merge = require('deepmerge');
-
 const evaluate = require('./evaluate');
 
 const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([ ...(await chain), await fn() ]), Promise.resolve([]));
@@ -83,7 +82,7 @@ function parseArgs(acc, cmdPath, args, config) {
     if (args.default) config[args.name] = args.default;
 
     if (config[args.name] || [ 'variable', 'template' ].includes(args.type)) {
-        let { name, type = 'option' } = args;
+        let { name, type = 'option', useEquals = false } = args;
         const value = config[name] != null
             ? String(config[name])
             : null;
@@ -93,7 +92,8 @@ function parseArgs(acc, cmdPath, args, config) {
                 result = value;
                 break;
             case 'option':
-                result = `--${name}`;
+                result = [ `--${name}`, value ];
+                if (useEquals) result = result.join('=');
                 break;
             case 'flag':
                 result = `-${name}`;
@@ -117,7 +117,7 @@ function parseArgs(acc, cmdPath, args, config) {
 function ShellLoader(definition) {
     if (definition == null) throw new Error('invalid definition');
 
-    let { spec } = definition;
+    let { spec, label, alias, config:boundConfig = {}, silent } = definition;
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
 
@@ -133,7 +133,7 @@ function ShellLoader(definition) {
         spec = spec.slice(1);
     }
 
-    async function loader(cmdPath, config = {}) {
+    async function shellTarget(config = {}, { name:cmdPath }) {
         cmdPath = Array.isArray(cmdPath)
             ? cmdPath.slice(1)
             : cmdPath.split('.').slice(1);
@@ -142,5 +142,5 @@ function ShellLoader(definition) {
         return [ command, ...args ];
     }
 
-    return loader;
+    return shellTarget;
 }
