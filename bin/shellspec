@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-const ShellLoader = require('..');
+const ShellSpec = require('..');
 const { readFileSync } = require('fs');
 const Answers = require('answers');
 
 (async () => {
-    const config = await Answers({ name: 'shell_loader' });
+    const config = await Answers({ name: 'shellspec' });
     const data = readFileSync(config._[0], 'utf8');
     if (data != null) {
         let spec;
@@ -15,7 +15,7 @@ const Answers = require('answers');
         } catch (e) {
             process.stderr.write('{"error":"invalid JSON"}');
         }
-        const loader = ShellLoader(spec);
+        const loader = ShellSpec(spec);
         const result = await loader(config._[1], config);
         process.stdout.write(result.join(' '));
     }

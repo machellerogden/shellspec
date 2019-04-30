@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = ShellLoader;
+module.exports = ShellSpec;
 
 const camelCase = require('lodash/camelCase');
 const mapKeys = require('lodash/mapKeys');
@@ -146,7 +146,7 @@ function parseArgv(tokens) {
     }, []);
 }
 
-function ShellLoader(definition) {
+function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
     let { spec, label, alias, config:boundConfig = {}, silent } = definition;

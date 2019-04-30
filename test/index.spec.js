@@ -1,5 +1,5 @@
 import test from 'ava';
-import ShellLoader from '..';
+import ShellSpec from '..';
 
 import aws from './mocks/aws';
 import docker from './mocks/docker';
@@ -7,7 +7,7 @@ import git from './mocks/git';
 
 test('aws 1', async t => {
 
-    const { getArgv } = ShellLoader(aws);
+    const { getArgv } = ShellSpec(aws);
 
     const input = {
         debug: true,
@@ -28,7 +28,7 @@ test('aws 1', async t => {
 
 test('aws 2', async t => {
 
-    const { getArgv } = ShellLoader(aws);
+    const { getArgv } = ShellSpec(aws);
 
     const input = {
         debug: true,
@@ -48,7 +48,7 @@ test('aws 2', async t => {
 
 test('docker build', async t => {
 
-    const { getArgv } = ShellLoader(docker);
+    const { getArgv } = ShellSpec(docker);
 
     const input = {
         build: {
@@ -67,7 +67,7 @@ test('docker build', async t => {
 
 test('docker run', async t => {
 
-    const { getArgv } = ShellLoader(docker);
+    const { getArgv } = ShellSpec(docker);
 
     const input = {
         run: {
@@ -86,7 +86,7 @@ test('docker run', async t => {
 
 test('git rev-parse defaults', async t => {
 
-    const { getArgv } = ShellLoader(git);
+    const { getArgv } = ShellSpec(git);
 
     const input = {};
 
@@ -99,7 +99,7 @@ test('git rev-parse defaults', async t => {
 
 test('git rev-parse w options', async t => {
 
-    const { getArgv } = ShellLoader(git);
+    const { getArgv } = ShellSpec(git);
 
     const input = {
         "rev-parse": {
