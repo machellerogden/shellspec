@@ -2,6 +2,9 @@
 
 module.exports = ShellLoader;
 
+const camelCase = require('lodash/camelCase');
+const mapKeys = require('lodash/mapKeys');
+const cloneDeep = require('lodash/cloneDeep');
 const inquirer = require('inquirer');
 const merge = require('deepmerge');
 const evaluate = require('./evaluate');
@@ -64,54 +67,83 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
     return acc;
 }
 
-function parseArgs(acc, cmdPath, args, config) {
-    if (args == null) throw new Error('invalid arguments');
+function tokenize(tokens, token, cmdPath, config) {
+    if (token == null) throw new Error('invalid arguments');
 
-    if (Array.isArray(args)) return [ ...acc, ...args.reduce((a, v) => [ ...a, ...parseArgs(acc, cmdPath, v, config) ], acc) ];
+    if (Array.isArray(token)) return [ ...tokens, ...token.reduce((a, t) => [ ...a, ...tokenize(tokens, t, cmdPath, config) ], tokens) ];
 
-    if (args.command && cmdPath[0] === args.command) {
-        if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
+    if (token.command && cmdPath[0] === token.command) {
+        if (typeof token.command !== 'string') throw new Error('invalid spec - command must be a string');
+        const nextToken = token.args || [];
         const nextCmdPath = cmdPath.slice(1);
-        const nextConfig = config[args.command] || {};
-        const nextArgs = args.args || [];
-        return [ ...acc, args.command, ...parseArgs(acc, nextCmdPath, nextArgs, nextConfig) ];
+        const nextConfig = config[token.command] || {};
+        return [ ...tokens, { name: token.command, type: "value", value: token.command }, ...tokenize(tokens, nextToken, nextCmdPath, nextConfig) ];
     }
 
-    if (typeof args === 'string') args = { name: args };
+    if (typeof token === 'string') token = { name: token };
 
-    if (args.default) config[args.name] = args.default;
+    if (config[token.name] == null && token.default) config[token.name] = token.default;
 
-    if (config[args.name] || [ 'variable', 'template' ].includes(args.type)) {
-        let { name, type = 'option', useEquals = false } = args;
-        const value = config[name] != null
-            ? String(config[name])
-            : null;
+    if (config[token.name] || [ 'variable' ].includes(token.type)) {
+        if (token.type == null) token.type = 'option';
+        if (typeof token.value === 'string' && token.value.includes('${')) {
+            let ctx = mapKeys(config, (v, k) => camelCase(k));
+            token.value = Array.isArray(token.value)
+                    ? token.value.map(v => evaluate(`\`${v}\``, ctx))
+                    : evaluate(`\`${token.value}\``, ctx);
+        } else {
+            token.value = config[token.name] != null
+                ? String(config[token.name])
+                : null;
+        }
+        if (token.type === 'variable') {
+            config[token.name] = token.value;
+        } else {
+            return [ ...tokens, token ];
+        }
+    }
+    return tokens;
+}
+
+function parseArgv(tokens) {
+    return tokens.reduce((argv, arg) => {
+
+        let {
+            name,
+            type = 'option',
+            value,
+            useEquals,
+            useValue
+        } = arg;
+
         let result;
+
         switch (type) {
             case 'value':
                 result = value;
                 break;
             case 'option':
-                result = [ `--${name}`, value ];
-                if (useEquals) result = result.join('=');
+                result = `--${name}`;
+                if (useValue === false) break;
+                result = [ result, value ];
+                if (useEquals === true) result = result.join('=');
                 break;
             case 'flag':
                 result = `-${name}`;
-                break;
-            case 'variable':
-                config[name] = value;
-                break;
-            case 'template':
-                result = Array.isArray(args.template)
-                    ? args.template.map(v => evaluate(`\`${v}\``, config))
-                    : evaluate(`\`${args.template}\``, config);
+                if (useValue === true) {
+                    result = [ result, value ];
+                    if (useEquals === true) result.join('=');
+                } else if (useEquals === true) {
+                    result = [ result, 'true' ].join('=');
+                }
                 break;
             default:
                 throw new Error(`invalid argument type: ${type}`);
         }
-        if (result != null) return [ ...acc, ...(Array.isArray(result) ? result : [ result ]) ];
-    }
-    return acc;
+        return (result != null)
+            ? [ ...argv, ...(Array.isArray(result) ? result : [ result ]) ]
+            : argv;
+    }, []);
 }
 
 function ShellLoader(definition) {
@@ -133,14 +165,21 @@ function ShellLoader(definition) {
         spec = spec.slice(1);
     }
 
-    async function shellTarget(config = {}, { name:cmdPath }) {
-        cmdPath = Array.isArray(cmdPath)
-            ? cmdPath.slice(1)
-            : cmdPath.split('.').slice(1);
-        const answers = await seq(prompts([], cmdPath, spec, config, cmdPath.join('.')));
-        const args = parseArgs([], cmdPath, spec, merge(config, ...(answers.length ? answers : [{}])));
-        return [ command, ...args ];
+    async function getTokens(originalConfig = {}, { name }) {
+        const config = cloneDeep(originalConfig);
+        name = Array.isArray(name)
+            ? name.slice(1)
+            : name.split('.').slice(1);
+        const answers = await seq(prompts([], name, spec, config, name.join('.')));
+        const tokens = tokenize([], spec, name, merge(config, ...(answers.length ? answers : [{}])));
+        return tokens;
     }
 
-    return shellTarget;
+    async function getArgv(config = {}, meta = {}) {
+        const tokens = await getTokens(config, meta);
+        const argv = parseArgv(tokens);
+        return [ command, ...argv ];
+    }
+
+    return { getArgv };
 }

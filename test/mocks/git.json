@@ -22,7 +22,7 @@
                     {
                         "name": "short",
                         "type": "option",
-                        "useEquals": "true",
+                        "useEquals": true,
                         "default": 12
                     },
                     {

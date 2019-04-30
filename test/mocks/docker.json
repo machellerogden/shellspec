@@ -15,13 +15,13 @@
                 },
                 {
                     "name": "version",
-                    "default": "latest",
-                    "type": "variable"
+                    "type": "variable",
+                    "default": "latest"
                 },
                 {
                     "name": "tag",
-                    "type": "template",
-                    "template": [ "--tag", "${registry ? `${registry}/` : ''}${name}:${version}" ]
+                    "type": "variable",
+                    "value": "${registry ? `${registry}/` : ''}${name}:${version}"
                 }
             ]
         },
@@ -32,6 +32,11 @@
                     {
                         "name": "tag",
                         "type": "collection"
+                    },
+                    {
+                        "name": "tag",
+                        "type": "option",
+                        "value": "${tag}"
                     },
                     "add-host",
                     "build-arg",
@@ -174,6 +179,11 @@
                     {
                         "name": "tag",
                         "type": "collection"
+                    },
+                    {
+                        "name": "tag",
+                        "type": "value",
+                        "value": "${tag}"
                     },
                     {
                         "name": "command",
