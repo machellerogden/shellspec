@@ -9,7 +9,7 @@ test('aws 1', async t => {
 
     const { getArgv } = ShellSpec(aws);
 
-    const input = {
+    const config = {
         debug: true,
         s3: {
             cp: {
@@ -21,7 +21,7 @@ test('aws 1', async t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
-    const argv = await getArgv(input, { name: 'aws.s3.cp' });
+    const argv = await getArgv('aws.s3.cp', config);
 
     t.deepEqual(argv, output);
 });
@@ -30,7 +30,7 @@ test('aws 2', async t => {
 
     const { getArgv } = ShellSpec(aws);
 
-    const input = {
+    const config = {
         debug: true,
         s3: {
             cp: {
@@ -41,7 +41,7 @@ test('aws 2', async t => {
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
 
-    const argv = await getArgv(input, { name: 'aws.s3.cp' });
+    const argv = await getArgv('aws.s3.cp', config);
 
     t.deepEqual(argv, output);
 });
@@ -50,7 +50,7 @@ test('docker build', async t => {
 
     const { getArgv } = ShellSpec(docker);
 
-    const input = {
+    const config = {
         build: {
             name: 'foo',
             version: 'latest',
@@ -60,7 +60,7 @@ test('docker build', async t => {
 
     const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
-    const argv = await getArgv(input, { name: 'docker.build' });
+    const argv = await getArgv('docker.build', config);
 
     t.deepEqual(argv, output);
 });
@@ -69,7 +69,7 @@ test('docker run', async t => {
 
     const { getArgv } = ShellSpec(docker);
 
-    const input = {
+    const config = {
         run: {
             name: 'foo',
             version: 'latest',
@@ -79,7 +79,7 @@ test('docker run', async t => {
 
     const output = [ 'docker', 'run', 'foo:latest', 'sh' ];
 
-    const argv = await getArgv(input, { name: 'docker.run' });
+    const argv = await getArgv('docker.run', config);
 
     t.deepEqual(argv, output);
 });
@@ -88,11 +88,11 @@ test('git rev-parse defaults', async t => {
 
     const { getArgv } = ShellSpec(git);
 
-    const input = {};
+    const config = {};
 
     const output = [ 'git', 'rev-parse', '--short=12', 'HEAD' ];
 
-    const argv = await getArgv(input, { name: 'git.rev-parse' });
+    const argv = await getArgv('git.rev-parse', config);
 
     t.deepEqual(argv, output);
 });
@@ -101,7 +101,7 @@ test('git rev-parse w options', async t => {
 
     const { getArgv } = ShellSpec(git);
 
-    const input = {
+    const config = {
         "rev-parse": {
             short: 8,
             refspec: "origin/master"
@@ -110,7 +110,7 @@ test('git rev-parse w options', async t => {
 
     const output = [ 'git', 'rev-parse', '--short=8', 'origin/master' ];
 
-    const argv = await getArgv(input, { name: 'git.rev-parse' });
+    const argv = await getArgv('git.rev-parse', config);
 
     t.deepEqual(argv, output);
 });

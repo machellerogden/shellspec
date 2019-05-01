@@ -171,32 +171,32 @@ function ShellSpec(definition) {
             : cloneDeep(config);
     }
 
-    function getCmdPath(name) {
-        return Array.isArray(name)
-            ? name.slice(1)
-            : name.split('.').slice(1);
+    function getCmdPath(cmd) {
+        return Array.isArray(cmd)
+            ? cmd.slice(1)
+            : cmd.split('.').slice(1);
     }
 
-    function getTokens(config = {}, { name }) {
-        name = getCmdPath(name);
-        return tokenize([], spec, name, mergeConfig(config));
+    function getTokens(cmd, config = {}) {
+        cmd = getCmdPath(cmd);
+        return tokenize([], spec, cmd, mergeConfig(config));
     }
 
-    function getPrompts(config = {}, { name }) {
-        name = getCmdPath(name);
-        return prompts([], name, spec, mergeConfig(config), name.join('.'));
+    function getPrompts(cmd, config = {}) {
+        cmd = getCmdPath(cmd);
+        return prompts([], cmd, spec, mergeConfig(config), cmd.join('.'));
     }
 
-    function getArgv(config = {}, meta) {
-        const tokens = getTokens(mergeConfig(config), meta);
+    function getArgv(cmd, config = {}) {
+        const tokens = getTokens(cmd, mergeConfig(config));
         const argv = parseArgv(tokens);
         return [ command, ...argv ];
     }
 
-    async function awaitArgv(config = {}, meta) {
-        const prompts = getPrompts(config, meta);
+    async function awaitArgv(cmd, config = {}) {
+        const prompts = getPrompts(cmd, config);
         const answers = await inquirer.prompt(prompts);
-        return await getArgv([ config, answers ], meta);
+        return await getArgv(cmd, [ config, answers ]);
     }
 
     return { getPrompts, getArgv, awaitArgv };
