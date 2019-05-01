@@ -173,18 +173,18 @@ function ShellSpec(definition) {
 
     function getCmdPath(name) {
         return Array.isArray(name)
-            ? name.slice(1)
-            : name.split('.').slice(1);
+            ? name
+            : name.split('.');
     }
 
     function getTokens(config = {}, { name }) {
-        name = getCmdPath(name);
-        return tokenize([], spec, name, mergeConfig(config));
+        const [ cmd, ...cmdPath ] = getCmdPath(name);
+        return tokenize([], spec, name, mergeConfig(config)[cmd]);
     }
 
     function getPrompts(config = {}, { name }) {
-        name = getCmdPath(name);
-        return prompts([], name, spec, mergeConfig(config), name.join('.'));
+        const [ cmd, ...cmdPath ] = getCmdPath(name);
+        return prompts([], cmdPath, spec, mergeConfig(config)[cmd], name);
     }
 
     function getArgv(config = {}, meta) {
@@ -196,6 +196,12 @@ function ShellSpec(definition) {
     async function awaitArgv(config = {}, meta) {
         const prompts = getPrompts(config, meta);
         const answers = await inquirer.prompt(prompts);
+        console.log("spec");
+        console.log(spec);
+        console.log("config");
+        console.log(config);
+        console.log("answers");
+        console.log(answers);
         return await getArgv([ config, answers ], meta);
     }
 

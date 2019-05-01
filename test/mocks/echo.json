@@ -1,0 +1,12 @@
+{
+    "kind": "shell",
+    "spec": {
+        "command": "echo",
+        "args": [
+            {
+                "name": "value",
+                "type": "value"
+            }
+        ]
+    }
+}
