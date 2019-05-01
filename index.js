@@ -193,11 +193,11 @@ function ShellSpec(definition) {
         return [ command, ...argv ];
     }
 
-    async function getPromptedArgv(config = {}, meta) {
+    async function awaitArgv(config = {}, meta) {
         const prompts = getPrompts(config, meta);
         const answers = await inquirer.prompt(prompts);
         return await getArgv([ config, answers ], meta);
     }
 
-    return { getPrompts, getArgv, getPromptedArgv };
+    return { getPrompts, getArgv, awaitArgv };
 }
