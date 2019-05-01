@@ -153,10 +153,16 @@ function ShellSpec(definition) {
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
 
-    // TODO: support array notation
+    let command;
+
     if (!Array.isArray(spec)) {
         if (!spec.command) throw new Error('invalid spec - missing main command definition');
         spec = populateCollections(spec);
+        command = spec.command;
+        spec = spec.args || [];
+    } else {
+        command = spec[0];
+        spec = spec.slice(1);
     }
 
     function mergeConfig(config) {
@@ -167,8 +173,8 @@ function ShellSpec(definition) {
 
     function getCmdPath(name) {
         return Array.isArray(name)
-            ? name
-            : name.split('.')
+            ? name.slice(1)
+            : name.split('.').slice(1);
     }
 
     function getTokens(config = {}, { name }) {
@@ -184,7 +190,7 @@ function ShellSpec(definition) {
     function getArgv(config = {}, meta) {
         const tokens = getTokens(mergeConfig(config), meta);
         const argv = parseArgv(tokens);
-        return argv;
+        return [ command, ...argv ];
     }
 
     async function awaitArgv(config = {}, meta) {
