@@ -177,24 +177,24 @@ function ShellSpec(definition) {
             : name.split('.').slice(1);
     }
 
-    async function getTokens(config = {}, { name }) {
+    function getTokens(config = {}, { name }) {
         name = getCmdPath(name);
         return tokenize([], spec, name, mergeConfig(config));
     }
 
-    async function getPrompts(config = {}, { name }) {
+    function getPrompts(config = {}, { name }) {
         name = getCmdPath(name);
         return prompts([], name, spec, mergeConfig(config), name.join('.'));
     }
 
-    async function getArgv(config = {}, meta) {
-        const tokens = await getTokens(mergeConfig(config), meta);
+    function getArgv(config = {}, meta) {
+        const tokens = getTokens(mergeConfig(config), meta);
         const argv = parseArgv(tokens);
         return [ command, ...argv ];
     }
 
     async function getPromptedArgv(config = {}, meta) {
-        const prompts = await getPrompts(config, meta);
+        const prompts = getPrompts(config, meta);
         const answers = await inquirer.prompt(prompts);
         return await getArgv([ config, answers ], meta);
     }
