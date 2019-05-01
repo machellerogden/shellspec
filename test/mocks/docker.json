@@ -121,7 +121,11 @@
                     "help",
                     "hostname",
                     "init",
-                    "interactive",
+                    {
+                        "name": "interactive",
+                        "type": "option",
+                        "useValue": false
+                    },
                     "io-maxbandwidth",
                     "io-maxiops",
                     "ip",
@@ -167,7 +171,11 @@
                     "storage-opt",
                     "sysctl",
                     "tmpfs",
-                    "tty",
+                    {
+                        "name": "tty",
+                        "type": "option",
+                        "useValue": false
+                    },
                     "ulimit",
                     "user",
                     "userns",

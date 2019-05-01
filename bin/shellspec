@@ -7,6 +7,7 @@ const Answers = require('answers');
 
 (async () => {
     const config = await Answers({ name: 'shellspec' });
+    const cmd = config._[1];
     const data = readFileSync(config._[0], 'utf8');
     if (data != null) {
         let spec;
@@ -16,7 +17,7 @@ const Answers = require('answers');
             process.stderr.write('{"error":"invalid JSON"}');
         }
         const loader = ShellSpec(spec);
-        const result = await loader(config._[1], config);
-        process.stdout.write(result.join(' '));
+        const argv = await loader.getPromptedArgv(config, { name: cmd });
+        process.stdout.write(argv.join(' '));
     }
 })();

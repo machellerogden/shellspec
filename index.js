@@ -57,11 +57,11 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
 
     if (config[args.name] == null && args.required) {
         const name = `${cmdKey}.${args.name}`;
-        return [ ...acc, () => inquirer.prompt([{
+        return [ ...acc, {
             name,
             type: 'input',
             message: name
-        }]) ];
+        } ];
     }
 
     return acc;
@@ -165,21 +165,39 @@ function ShellSpec(definition) {
         spec = spec.slice(1);
     }
 
-    async function getTokens(originalConfig = {}, { name }) {
-        const config = cloneDeep(originalConfig);
-        name = Array.isArray(name)
-            ? name.slice(1)
-            : name.split('.').slice(1);
-        const answers = await seq(prompts([], name, spec, config, name.join('.')));
-        const tokens = tokenize([], spec, name, merge(config, ...(answers.length ? answers : [{}])));
-        return tokens;
+    function mergeConfig(config) {
+        return Array.isArray(config)
+            ? merge(...config.filter(v => v))
+            : cloneDeep(config);
     }
 
-    async function getArgv(config = {}, meta = {}) {
-        const tokens = await getTokens(config, meta);
+    function getCmdPath(name) {
+        return Array.isArray(name)
+            ? name.slice(1)
+            : name.split('.').slice(1);
+    }
+
+    async function getTokens(config = {}, { name }) {
+        name = getCmdPath(name);
+        return tokenize([], spec, name, mergeConfig(config));
+    }
+
+    async function getPrompts(config = {}, { name }) {
+        name = getCmdPath(name);
+        return prompts([], name, spec, mergeConfig(config), name.join('.'));
+    }
+
+    async function getArgv(config = {}, meta) {
+        const tokens = await getTokens(mergeConfig(config), meta);
         const argv = parseArgv(tokens);
         return [ command, ...argv ];
     }
 
-    return { getArgv };
+    async function getPromptedArgv(config = {}, meta) {
+        const prompts = await getPrompts(config, meta);
+        const answers = await inquirer.prompt(prompts);
+        return await getArgv([ config, answers ], meta);
+    }
+
+    return { getPrompts, getArgv, getPromptedArgv };
 }
