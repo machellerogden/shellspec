@@ -479,3 +479,49 @@ test.skip('concatFlags 3', t => {
 
     t.throws(() => getArgv('foo', config), 'Invalid Spec: `useValue` cannot be used in conjunction with `concatFlags`');
 });
+
+test.skip('concatFlags 4', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    command: 'bar',
+                    concatFlags: true,
+                    args: [
+                        {
+                            name: 'a',
+                            type: 'flag'
+                        },
+                        {
+                            name: 'b',
+                            type: 'flag'
+                        },
+                        {
+                            name: 'c',
+                            type: 'flag'
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    const config = {
+        bar: {
+            a: true,
+            b: true,
+            c: true
+        }
+    };
+
+    const argv = getArgv('foo.bar', config);
+
+    const output = [ 'foo', 'bar', '-abc' ];
+
+    t.deepEqual(argv, output);
+});
