@@ -67,30 +67,39 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
     return acc;
 }
 
-function maybeConcat(token) {
+function concatAllFlags(args) {
     let insertionPoint = 0;
-    const [ before, flags, after ] = token.concatFlags
-        ? (token.args || []).reduce(([ b, f, a ], v, i) => {
-              if (v.type === 'flag') {
-                  if (!f) {
-                      insertionPoint = i;
-                      f = v;
-                  } else {
-                      f.name += v.name;
-                  }
-                  return [ b, f, a ];
-              }
-              return i < insertionPoint
-                ? [ [ ...b, v ], f, a ]
-                : [ b, f, [ ...a, v ] ];
-          }, [ [], null, [] ])
-        : [ token.args || [], [], [] ];
-    return {
-        ...token,
-        args: flags
-            ? [ ...before, flags, ...after ]
-            : [ ...before, ...after ]
-    };
+    const [ before, flags, after ] = (args || []).reduce(([ b, f, a ], v, i) => {
+        if (v.type === 'flag') {
+            if (!f) {
+                insertionPoint = i;
+                f = v;
+            } else {
+                f.name += v.name;
+            }
+            return [ b, f, a ];
+        }
+        return i < insertionPoint
+            ? [ [ ...b, v ], f, a ]
+            : [ b, f, [ ...a, v ] ];
+    }, [ [], null, [] ]);
+    return flags
+        ? [ ...before, flags, ...after ]
+        : [ ...before, ...after ];
+}
+
+function concatAdjacentFlags(args) {
+    return args.reduce((acc, arg, i) => {
+        if (arg.type === 'flag') {
+            let prev = args[i - 1];
+            if (prev && prev.type === 'flag') {
+                prev.name += arg.name;
+                return acc;
+            }
+        }
+        acc = [ ...acc, arg ];
+        return acc;
+    }, []);
 }
 
 function tokenize(tokens, token, cmdPath, config) {
@@ -214,11 +223,13 @@ function ShellSpec(definition) {
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
 
     let command;
+    let concatFlags;
 
     if (!Array.isArray(spec)) {
         if (!spec.command) throw new Error('invalid spec - missing main command definition');
         spec = populateCollections(spec);
         command = spec.command;
+        concatFlags = spec.concatFlags;
         spec = spec.args || [];
     } else {
         command = spec[0];
@@ -239,7 +250,10 @@ function ShellSpec(definition) {
 
     function getTokens(cmd, config = {}) {
         cmd = getCmdPath(cmd);
-        return tokenize([], spec, cmd, mergeConfig(config));
+        let tokens = tokenize([], spec, cmd, mergeConfig(config));
+        if (concatFlags === true) tokens = concatAllFlags(tokens);
+        if (concatFlags === 'adjacent') tokens = concatAdjacentFlags(tokens);
+        return tokens;
     }
 
     function getPrompts(cmd, config = {}) {

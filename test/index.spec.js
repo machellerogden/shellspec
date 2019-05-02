@@ -365,7 +365,7 @@ test('without 3', t => {
 });
 
 // TODO - tricky bidness...
-test.skip('concatFlags', t => {
+test('concatFlags', t => {
 
     const spec = {
         kind: 'shell',
@@ -405,13 +405,13 @@ test.skip('concatFlags', t => {
 });
 
 // TODO
-test.skip('concatFlags 2', t => {
+test('concatFlags should only concat adjacent flags so as not to mess with arg order', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: [ 'a', 'c' ],
+            concatFlags: 'adjacent',
             args: [
                 {
                     name: 'a',
@@ -419,7 +419,7 @@ test.skip('concatFlags 2', t => {
                 },
                 {
                     name: 'b',
-                    type: 'flag'
+                    type: 'value'
                 },
                 {
                     name: 'c',
@@ -433,13 +433,13 @@ test.skip('concatFlags 2', t => {
 
     const config = {
         a: true,
-        b: true,
+        b: 'bar',
         c: true
     };
 
     const argv = getArgv('foo', config);
 
-    const output = [ 'foo', '-ac', 'b' ];
+    const output = [ 'foo', '-a', 'bar', '-c' ];
 
     t.deepEqual(argv, output);
 });
