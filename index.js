@@ -2,7 +2,7 @@
 
 module.exports = ShellSpec;
 
-const camelCase = require('lodash/camelCase');
+const snakeCase = require('lodash/snakeCase');
 const mapKeys = require('lodash/mapKeys');
 const cloneDeep = require('lodash/cloneDeep');
 const inquirer = require('inquirer');
@@ -67,17 +67,51 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
     return acc;
 }
 
+function maybeConcat(token) {
+    let insertionPoint = 0;
+    const [ before, flags, after ] = token.concatFlags
+        ? (token.args || []).reduce(([ b, f, a ], v, i) => {
+              if (v.type === 'flag') {
+                  if (!f) {
+                      insertionPoint = i;
+                      f = v;
+                  } else {
+                      f.name += v.name;
+                  }
+                  return [ b, f, a ];
+              }
+              return i < insertionPoint
+                ? [ [ ...b, v ], f, a ]
+                : [ b, f, [ ...a, v ] ];
+          }, [ [], null, [] ])
+        : [ token.args || [], [], [] ];
+    return {
+        ...token,
+        args: flags
+            ? [ ...before, flags, ...after ]
+            : [ ...before, ...after ]
+    };
+}
+
 function tokenize(tokens, token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
 
     if (Array.isArray(token)) return [ ...tokens, ...token.reduce((a, t) => [ ...a, ...tokenize(tokens, t, cmdPath, config) ], tokens) ];
 
     if (token.command && cmdPath[0] === token.command) {
-        if (typeof token.command !== 'string') throw new Error('invalid spec - command must be a string');
+        if (typeof token.command !== 'string') throw new Error('Invalid Spec: command must be a string');
         const nextToken = token.args || [];
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[token.command] || {};
-        return [ ...tokens, { name: token.command, type: "value", value: token.command }, ...tokenize(tokens, nextToken, nextCmdPath, nextConfig) ];
+        return [
+            ...tokens,
+            {
+                name: token.command,
+                type: 'value',
+                value: token.command
+            },
+            ...tokenize(tokens, nextToken, nextCmdPath, nextConfig)
+        ];
     }
 
     if (typeof token === 'string') token = { name: token };
@@ -87,13 +121,15 @@ function tokenize(tokens, token, cmdPath, config) {
     if (config[token.name] || [ 'variable' ].includes(token.type)) {
         if (token.type == null) token.type = 'option';
         if (typeof token.value === 'string' && token.value.includes('${')) {
-            let ctx = mapKeys(config, (v, k) => camelCase(k));
+            let ctx = mapKeys(config, (v, k) => snakeCase(k));
             token.value = Array.isArray(token.value)
                     ? token.value.map(v => evaluate(`\`${v}\``, ctx))
                     : evaluate(`\`${token.value}\``, ctx);
         } else {
             token.value = config[token.name] != null
-                ? String(config[token.name])
+                ? Array.isArray(config[token.name])
+                    ? config[token.name].map(String)
+                    : String(config[token.name])
                 : null;
         }
         if (token.type === 'variable') {
@@ -113,13 +149,37 @@ function parseArgv(tokens) {
             type = 'option',
             value,
             useEquals,
-            useValue
+            useValue,
+            with:w,
+            without:wo
         } = arg;
+
+        if (w) {
+            w = Array.isArray(w)
+                ? w
+                : [ w ];
+            if (!tokens.find(v => w.includes(v.name))) {
+                throw new Error(`the ${type} \`${name}\` must be accompanied by \`${w.join('\`, `')}\``);
+            }
+        }
+
+        if (wo) {
+            wo = Array.isArray(wo)
+                ? wo
+                : [ wo ];
+            const bad = tokens.find(v => wo.includes(v.name));
+            if (bad) {
+                throw new Error(`the ${type} \`${name}\` and the ${bad.type} \`${bad.name}\` cannot be used together`);
+            }
+        }
 
         let result;
 
         switch (type) {
             case 'value':
+                result = value;
+                break;
+            case 'values':
                 result = value;
                 break;
             case 'option':
