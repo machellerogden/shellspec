@@ -232,17 +232,10 @@ function ShellSpec(definition) {
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
 
-    let main;
-    let concatFlags;
-
-    if (!Array.isArray(spec)) {
-        if (!spec.command) throw new Error('invalid spec - missing main command definition');
-        spec = populateCollections(spec);
-        main = spec.command;
-        concatFlags = spec.concatFlags;
-    } else {
-        main = spec[0];
-    }
+    if (!spec.command) throw new Error('invalid spec - missing main command definition');
+    spec = populateCollections(spec);
+    const main = spec.command;
+    const concatFlags = spec.concatFlags;
 
     function getTokens(cmd, config = {}) {
         cmd = getCmdPath(cmd);
