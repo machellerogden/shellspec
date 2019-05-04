@@ -215,6 +215,16 @@ function parseArgv(tokens) {
     }, []);
 }
 
+function mergeConfig(...config) {
+    return merge(config.filter(v => v));
+}
+
+function getCmdPath(cmd) {
+    return Array.isArray(cmd)
+        ? cmd
+        : cmd.split('.');
+}
+
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
@@ -232,16 +242,6 @@ function ShellSpec(definition) {
         concatFlags = spec.concatFlags;
     } else {
         main = spec[0];
-    }
-
-    function mergeConfig(...config) {
-        return merge(config.filter(v => v));
-    }
-
-    function getCmdPath(cmd) {
-        return Array.isArray(cmd)
-            ? cmd
-            : cmd.split('.');
     }
 
     function getTokens(cmd, config = {}) {
