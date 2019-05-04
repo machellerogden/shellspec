@@ -67,10 +67,24 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
     return acc;
 }
 
-function concatAllFlags(args) {
+function concatAdjacentFlags(args) {
+    return args.reduce((acc, arg, i) => {
+        if (arg.type === 'flag') {
+            let prev = args[i - 1];
+            if (prev && prev.type === 'flag') {
+                prev.name += arg.name;
+                return acc;
+            }
+        }
+        acc = [ ...acc, arg ];
+        return acc;
+    }, []);
+}
+
+function concatGivenFlags(args, givenFlags) {
     let insertionPoint = 0;
     const [ before, flags, after ] = (args || []).reduce(([ b, f, a ], v, i) => {
-        if (v.type === 'flag') {
+        if (v.type === 'flag' && (!Array.isArray(givenFlags) || givenFlags.includes(v.name))) {
             if (!f) {
                 insertionPoint = i;
                 f = v;
@@ -86,20 +100,6 @@ function concatAllFlags(args) {
     return flags
         ? [ ...before, flags, ...after ]
         : [ ...before, ...after ];
-}
-
-function concatAdjacentFlags(args) {
-    return args.reduce((acc, arg, i) => {
-        if (arg.type === 'flag') {
-            let prev = args[i - 1];
-            if (prev && prev.type === 'flag') {
-                prev.name += arg.name;
-                return acc;
-            }
-        }
-        acc = [ ...acc, arg ];
-        return acc;
-    }, []);
 }
 
 function tokenize(tokens, token, cmdPath, config) {
@@ -251,8 +251,8 @@ function ShellSpec(definition) {
     function getTokens(cmd, config = {}) {
         cmd = getCmdPath(cmd);
         let tokens = tokenize([], spec, cmd, mergeConfig(config));
-        if (concatFlags === true) tokens = concatAllFlags(tokens);
         if (concatFlags === 'adjacent') tokens = concatAdjacentFlags(tokens);
+        if (concatFlags === true || Array.isArray(concatFlags)) tokens = concatGivenFlags(tokens, concatFlags);
         return tokens;
     }
 

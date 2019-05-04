@@ -444,7 +444,7 @@ test('concatFlags should only concat adjacent flags so as not to mess with arg o
     t.deepEqual(argv, output);
 });
 
-test.skip('concatFlags 3', t => {
+test('concatFlags 3', t => {
 
     const spec = {
         kind: 'shell',
@@ -454,8 +454,7 @@ test.skip('concatFlags 3', t => {
             args: [
                 {
                     name: 'a',
-                    type: 'flag',
-                    useValue: true
+                    type: 'flag'
                 },
                 {
                     name: 'b',
@@ -477,10 +476,14 @@ test.skip('concatFlags 3', t => {
         c: true
     };
 
-    t.throws(() => getArgv('foo', config), 'Invalid Spec: `useValue` cannot be used in conjunction with `concatFlags`');
+    const argv = getArgv('foo', config);
+
+    const output = [ 'foo', '-ac', '-b' ];
+
+    t.deepEqual(argv, output);
 });
 
-test.skip('concatFlags 4', t => {
+test.skip('concatFlags should work at any level', t => {
 
     const spec = {
         kind: 'shell',
