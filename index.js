@@ -218,10 +218,6 @@ function parseArgv(tokens) {
     }, []);
 }
 
-function mergeConfig(...config) {
-    return merge(config.filter(v => v));
-}
-
 function getCmdPath(cmd) {
     return Array.isArray(cmd)
         ? cmd
@@ -261,8 +257,8 @@ function ShellSpec(definition) {
 
     async function awaitArgv(cmd, config = {}) {
         const prompts = getPrompts(cmd, config);
-        const answers = await inquirer.prompt(prompts);
-        return await getArgv(cmd, mergeConfig(config, answers));
+        const answers = (await inquirer.prompt(prompts))[main];
+        return await getArgv(cmd, merge(config, answers));
     }
 
     return { getPrompts, getArgv, awaitArgv };
