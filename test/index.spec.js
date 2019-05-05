@@ -483,7 +483,43 @@ test('concatFlags 3', t => {
     t.deepEqual(argv, output);
 });
 
-test.skip('concatFlags should work at any level', t => {
+test('concatFlags cannot be used with useValue', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            concatFlags: [ 'a', 'c' ],
+            args: [
+                {
+                    name: 'a',
+                    type: 'flag'
+                },
+                {
+                    name: 'b',
+                    type: 'flag'
+                },
+                {
+                    name: 'c',
+                    type: 'flag',
+                    useValue: true
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    const config = {
+        a: true,
+        b: true,
+        c: true
+    };
+
+    t.throws(() => getArgv('foo', config), 'Invalid use of `useValue` on concatted flag `c`');
+});
+
+test('concatFlags only works at the top level', t => {
 
     const spec = {
         kind: 'shell',
@@ -524,7 +560,7 @@ test.skip('concatFlags should work at any level', t => {
 
     const argv = getArgv('foo.bar', config);
 
-    const output = [ 'foo', 'bar', '-abc' ];
+    const output = [ 'foo', 'bar', '-a', '-b', '-c' ];
 
     t.deepEqual(argv, output);
 });

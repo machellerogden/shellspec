@@ -21,6 +21,7 @@ function populateCollections(obj) {
     const acc = { ...obj };
     const collections = getCollections(obj);
 
+    // TODO: make readable... sorry world, I was rushing
     function walk(value) {
         return typeof value === 'object'
             ? Array.isArray(value)
@@ -70,6 +71,7 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
 function concatAdjacentFlags(args) {
     return args.reduce((acc, arg, i) => {
         if (arg.type === 'flag') {
+            if (arg.useValue) throw new Error(`Invalid use of \`useValue\` on concatted flag \`${arg.name}\``);
             let prev = args[i - 1];
             if (prev && prev.type === 'flag') {
                 prev.name += arg.name;
@@ -85,6 +87,7 @@ function concatGivenFlags(args, givenFlags) {
     let insertionPoint = 1;
     const [ before, flags, after ] = (args || []).reduce(([ b, f, a ], v, i) => {
         if (v.type === 'flag' && (!Array.isArray(givenFlags) || givenFlags.includes(v.name))) {
+            if (v.useValue) throw new Error(`Invalid use of \`useValue\` on concatted flag \`${v.name}\``);
             if (!f) {
                 insertionPoint = i;
                 f = v;
