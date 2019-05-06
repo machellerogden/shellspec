@@ -17,7 +17,7 @@ const Answers = require('answers');
             process.stderr.write('{"error":"invalid JSON"}');
         }
         const loader = ShellSpec(spec);
-        const argv = await loader.awaitArgv(cmd, config);
+        const argv = await loader.awaitArgv(config, cmd);
         process.stdout.write(argv.join(' '));
     }
 })();

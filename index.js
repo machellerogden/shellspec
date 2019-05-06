@@ -236,29 +236,29 @@ function ShellSpec(definition) {
     const main = spec.command;
     const concatFlags = spec.concatFlags;
 
-    function getTokens(cmd, config = {}) {
-        let tokens = tokenize([], spec, cmd, config);
+    function getTokens(config = {}, cmdPath = []) {
+        let tokens = tokenize([], spec, cmdPath, config);
         if (concatFlags === 'adjacent') tokens = concatAdjacentFlags(tokens);
         if (concatFlags === true || Array.isArray(concatFlags)) tokens = concatGivenFlags(tokens, concatFlags);
         return tokens;
     }
 
-    function getPrompts(cmd, config = {}) {
+    function getPrompts(config = {}, cmd = '') {
         cmd = [ main, ...getCmdPath(cmd) ];
         return prompts([], cmd, spec, { [main]: config }, cmd.join('.'));
     }
 
-    function getArgv(cmd, config = {}) {
+    function getArgv(config = {}, cmd = '') {
         cmd = [ main, ...getCmdPath(cmd) ];
-        const tokens = getTokens(cmd, { [main]: config });
+        const tokens = getTokens({ [main]: config }, cmd);
         const argv = parseArgv(tokens);
         return argv;
     }
 
-    async function awaitArgv(cmd, config = {}) {
-        const prompts = getPrompts(cmd, config);
+    async function awaitArgv(config, cmd) {
+        const prompts = getPrompts(config, cmd);
         const answers = (await inquirer.prompt(prompts))[main] || {};
-        return await getArgv(cmd, merge(config, answers));
+        return await getArgv(merge(config, answers), cmd);
     }
 
     return { getPrompts, getArgv, awaitArgv };

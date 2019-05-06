@@ -19,7 +19,7 @@ test('aws 1', t => {
         }
     };
 
-    const argv = getArgv('aws.s3.cp', config);
+    const argv = getArgv(config, 's3.cp');
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
@@ -39,7 +39,7 @@ test('aws 2', t => {
         }
     };
 
-    const argv = getArgv('aws.s3.cp', config);
+    const argv = getArgv(config, 's3.cp');
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
 
@@ -58,7 +58,7 @@ test('docker build', t => {
         }
     };
 
-    const argv = getArgv('docker.build', config);
+    const argv = getArgv(config, 'build');
 
     const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
@@ -77,7 +77,7 @@ test('docker run', t => {
         }
     };
 
-    const argv = getArgv('docker.run', config);
+    const argv = getArgv(config, 'run');
 
     const output = [ 'docker', 'run', 'foo:latest', 'sh' ];
 
@@ -90,7 +90,7 @@ test('git rev-parse defaults', t => {
 
     const config = {};
 
-    const argv = getArgv('git.rev-parse', config);
+    const argv = getArgv(config, 'rev-parse');
 
     const output = [ 'git', 'rev-parse', '--short=12', 'HEAD' ];
 
@@ -108,7 +108,7 @@ test('git rev-parse w options', t => {
         }
     };
 
-    const argv = getArgv('git.rev-parse', config);
+    const argv = getArgv(config, 'rev-parse');
 
     const output = [ 'git', 'rev-parse', '--short=8', 'origin/master' ];
 
@@ -136,7 +136,7 @@ test('simple echo', t => {
         args: [ 'foo', 'bar', 123, true, false ]
     };
 
-    const argv = getArgv('echo', config);
+    const argv = getArgv(config);
 
     const output = [ 'echo', 'foo', 'bar', '123', 'true', 'false' ];
 
@@ -176,7 +176,7 @@ test('with 1', t => {
         formal: true
     };
 
-    const argv = getArgv('greet', config);
+    const argv = getArgv(config);
 
     const output = [ 'greet', '--formal', '--first-name', 'Jane', '--last-name', 'Heller-Ogden' ];
 
@@ -215,7 +215,7 @@ test('with 2', t => {
         formal: true
     };
 
-    t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
+    t.throws(() => getArgv(config), 'the option `formal` must be accompanied by `last-name`');
 });
 
 test('with 3', t => {
@@ -250,7 +250,7 @@ test('with 3', t => {
         formal: true
     };
 
-    t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
+    t.throws(() => getArgv(config), 'the option `formal` must be accompanied by `last-name`');
 });
 
 test('without 1', t => {
@@ -285,7 +285,7 @@ test('without 1', t => {
         casual: true
     };
 
-    const argv = getArgv('greet', config);
+    const argv = getArgv(config);
 
     const output = [ 'greet', '--casual', '--first-name', 'Jane' ];
 
@@ -325,7 +325,7 @@ test('without 2', t => {
         casual: true
     };
 
-    t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
+    t.throws(() => getArgv(config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
 test('without 3', t => {
@@ -361,7 +361,7 @@ test('without 3', t => {
         casual: true
     };
 
-    t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
+    t.throws(() => getArgv(config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
 // TODO - tricky bidness...
@@ -397,7 +397,7 @@ test('concatFlags', t => {
         c: true
     };
 
-    const argv = getArgv('foo', config);
+    const argv = getArgv(config);
 
     const output = [ 'foo', '-abc' ];
 
@@ -437,7 +437,7 @@ test('concatFlags should only concat adjacent flags so as not to mess with arg o
         c: true
     };
 
-    const argv = getArgv('foo', config);
+    const argv = getArgv(config);
 
     const output = [ 'foo', '-a', 'bar', '-c' ];
 
@@ -476,7 +476,7 @@ test('concatFlags 3', t => {
         c: true
     };
 
-    const argv = getArgv('foo', config);
+    const argv = getArgv(config);
 
     const output = [ 'foo', '-ac', '-b' ];
 
@@ -516,7 +516,7 @@ test('concatFlags cannot be used with useValue', t => {
         c: true
     };
 
-    t.throws(() => getArgv('foo', config), 'Invalid use of `useValue` on concatted flag `c`');
+    t.throws(() => getArgv(config, 'foo'), 'Invalid use of `useValue` on concatted flag `c`');
 });
 
 test('concatFlags only works at the top level', t => {
@@ -558,7 +558,7 @@ test('concatFlags only works at the top level', t => {
         }
     };
 
-    const argv = getArgv('foo.bar', config);
+    const argv = getArgv(config, 'bar');
 
     const output = [ 'foo', 'bar', '-a', '-b', '-c' ];
 
