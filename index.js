@@ -221,7 +221,7 @@ function parseArgv(tokens) {
 function getCmdPath(cmd) {
     return Array.isArray(cmd)
         ? cmd
-        : cmd.split('.');
+        : (cmd || '').split('.');
 }
 
 function ShellSpec(definition) {
@@ -237,7 +237,6 @@ function ShellSpec(definition) {
     const concatFlags = spec.concatFlags;
 
     function getTokens(cmd, config = {}) {
-        cmd = getCmdPath(cmd);
         let tokens = tokenize([], spec, cmd, config);
         if (concatFlags === 'adjacent') tokens = concatAdjacentFlags(tokens);
         if (concatFlags === true || Array.isArray(concatFlags)) tokens = concatGivenFlags(tokens, concatFlags);
@@ -245,11 +244,12 @@ function ShellSpec(definition) {
     }
 
     function getPrompts(cmd, config = {}) {
-        cmd = getCmdPath(cmd);
+        cmd = [ main, ...getCmdPath(cmd) ];
         return prompts([], cmd, spec, { [main]: config }, cmd.join('.'));
     }
 
     function getArgv(cmd, config = {}) {
+        cmd = [ main, ...getCmdPath(cmd) ];
         const tokens = getTokens(cmd, { [main]: config });
         const argv = parseArgv(tokens);
         return argv;

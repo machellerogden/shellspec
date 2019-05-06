@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "answers": "^4.0.0",
+    "answers": "^4.0.3",
     "deepmerge": "^3.2.0",
     "inquirer": "^6.3.1",
     "lodash": "^4.17.11"

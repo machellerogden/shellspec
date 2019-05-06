@@ -4,8 +4,8 @@
         "command": "echo",
         "args": [
             {
-                "name": "value",
-                "type": "value"
+                "name": "args",
+                "type": "values"
             }
         ]
     }
