@@ -1,6 +1,6 @@
 {
   "name": "shellspec",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "generates execable arrays from spec files",
   "main": "index.js",
   "scripts": {
