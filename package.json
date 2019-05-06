@@ -17,15 +17,19 @@
   "license": "MIT",
   "dependencies": {
     "answers": "^4.0.3",
-    "deepmerge": "^3.2.0",
     "inquirer": "^6.3.1",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "sugarmerge": "^0.2.5"
   },
   "devDependencies": {
-    "ava": "^1.2.1"
+    "ava": "^1.2.1",
+    "pre-commit": "^1.2.2"
   },
   "engines": {
     "node": ">=10.6.0",
     "npm": ">=5.0.0"
-  }
+  },
+  "pre-commit": [
+    "test"
+  ]
 }

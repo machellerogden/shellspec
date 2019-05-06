@@ -6,7 +6,7 @@ const snakeCase = require('lodash/snakeCase');
 const mapKeys = require('lodash/mapKeys');
 const cloneDeep = require('lodash/cloneDeep');
 const inquirer = require('inquirer');
-const merge = require('deepmerge');
+const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 
 const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([ ...(await chain), await fn() ]), Promise.resolve([]));
