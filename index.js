@@ -257,7 +257,7 @@ function ShellSpec(definition) {
 
     async function awaitArgv(cmd, config = {}) {
         const prompts = getPrompts(cmd, config);
-        const answers = (await inquirer.prompt(prompts))[main];
+        const answers = (await inquirer.prompt(prompts))[main] || {};
         return await getArgv(cmd, merge(config, answers));
     }
 
