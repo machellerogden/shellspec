@@ -8,6 +8,7 @@ const cloneDeep = require('lodash/cloneDeep');
 const inquirer = require('inquirer');
 const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
+const child_process = require('child_process');
 
 const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([ ...(await chain), await fn() ]), Promise.resolve([]));
 
@@ -218,10 +219,10 @@ function parseArgv(tokens) {
     }, []);
 }
 
-function getCmdPath(cmd) {
-    return Array.isArray(cmd)
-        ? cmd
-        : (cmd || '').split('.');
+function getCmdPath(main, cmd) {
+    return cmd
+        ? [ main, ...(Array.isArray(cmd) ? cmd : (cmd || '').split('.')) ]
+        : [ main ];
 }
 
 function ShellSpec(definition) {
@@ -230,8 +231,8 @@ function ShellSpec(definition) {
     let { spec, label, alias, config:boundConfig = {}, silent } = definition;
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
-
     if (!spec.command) throw new Error('invalid spec - missing main command definition');
+
     spec = populateCollections(spec);
     const main = spec.command;
     const concatFlags = spec.concatFlags;
@@ -244,22 +245,38 @@ function ShellSpec(definition) {
     }
 
     function getPrompts(config = {}, cmd = '') {
-        cmd = [ main, ...getCmdPath(cmd) ];
+        cmd = getCmdPath(main, cmd);
         return prompts([], cmd, spec, { [main]: config }, cmd.join('.'));
     }
 
     function getArgv(config = {}, cmd = '') {
-        cmd = [ main, ...getCmdPath(cmd) ];
+        cmd = getCmdPath(main, cmd);
         const tokens = getTokens({ [main]: config }, cmd);
         const argv = parseArgv(tokens);
         return argv;
     }
 
-    async function awaitArgv(config, cmd) {
+    async function promptedArgv(config = {}, cmd = '') {
         const prompts = getPrompts(config, cmd);
         const answers = (await inquirer.prompt(prompts))[main] || {};
         return await getArgv(merge(config, answers), cmd);
     }
 
-    return { getPrompts, getArgv, awaitArgv };
+    function spawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
+        const [ command, ...args ] = getArgv(config, cmd);
+        return child_process.spawn(command, args, spawnOptions);
+    }
+
+    async function promptedSpawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
+        const [ command, ...args ] = await promptedArgv(config, cmd);
+        return child_process.spawn(command, args, spawnOptions);
+    }
+
+    return {
+        getPrompts,
+        getArgv,
+        promptedArgv,
+        spawn,
+        promptedSpawn
+    };
 }

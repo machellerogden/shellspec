@@ -519,7 +519,7 @@ test('concatFlags cannot be used with useValue', t => {
     t.throws(() => getArgv(config, 'foo'), 'Invalid use of `useValue` on concatted flag `c`');
 });
 
-test('concatFlags only works at the top level', t => {
+test('concatFlags only works at the top level - though someday it will probably work at any level', t => {
 
     const spec = {
         kind: 'shell',
