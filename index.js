@@ -10,12 +10,27 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
-const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([ ...(await chain), await fn() ]), Promise.resolve([]));
+const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([
+    ...(await chain),
+    await fn()
+]), Promise.resolve([]));
 
 const getCollections = (obj, acc = {}) => typeof obj === 'object'
     ? Array.isArray(obj)
-        ? { ...acc, ...obj.reduce((a, v) => getCollections(v, a), {}) }
-        : { ...acc, ...Object.entries(obj).reduce((a, [ k, v ]) => (k === 'collections') ? { ...a, ...v } : getCollections(v, a), {}) }
+        ? {
+            ...acc,
+            ...obj.reduce((a, v) =>
+                getCollections(v, a),
+                {})
+          }
+        : {
+            ...acc,
+            ...Object.entries(obj).reduce((a, [ k, v ]) =>
+                k === 'collections'
+                    ? { ...a, ...v }
+                    : getCollections(v, a),
+                {})
+          }
     : acc;
 
 function populateCollections(obj) {
@@ -30,12 +45,18 @@ function populateCollections(obj) {
                 : Object.entries(value).reduce((a, [ k, v ]) => {
                     a[k] = (k === 'args')
                         ? v.reduce((aa, arg) => {
-                              if (arg.type === 'collection' && collections[arg.name]) return [ ...aa, ...walk(collections[arg.name]) ];
-                              return [ ...aa, walk(arg) ];
+                            if (arg.type === 'collection' && collections[arg.name]) return [
+                                ...aa,
+                                ...walk(collections[arg.name])
+                            ];
+                            return [
+                                ...aa,
+                                walk(arg)
+                            ];
                           }, [])
                         : walk(v);
                     return a;
-                }, {})
+                  }, {})
             : value;
     }
 
@@ -45,13 +66,20 @@ function populateCollections(obj) {
 function prompts(acc, cmdPath, args, config, cmdKey) {
     if (args == null) throw new Error('invalid arguments');
 
-    if (Array.isArray(args)) return [ ...acc, ...args.reduce((a, v) => [ ...a, ...prompts(acc, cmdPath, v, config, cmdKey) ], acc) ];
+    if (Array.isArray(args)) return [
+        ...acc,
+        ...args.reduce((a, v) => [
+            ...a,
+            ...prompts(acc, cmdPath, v, config, cmdKey)
+        ], acc)
+    ];
 
     if (args.command && cmdPath[0] === args.command) {
         if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[args.command] || {};
         const nextArgs = args.args || [];
+
         return [ ...acc, ...prompts(acc, nextCmdPath, nextArgs, nextConfig, cmdKey) ];
     }
 
@@ -59,6 +87,7 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
 
     if (config[args.name] == null && args.required) {
         const name = `${cmdKey}.${args.name}`;
+
         return [ ...acc, {
             name,
             type: 'input',
@@ -70,21 +99,27 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
 }
 
 function concatAdjacentFlags(args) {
+
     return args.reduce((acc, arg, i) => {
+
         if (arg.type === 'flag') {
             if (arg.useValue) throw new Error(`Invalid use of \`useValue\` on concatted flag \`${arg.name}\``);
+
             let prev = args[i - 1];
             if (prev && prev.type === 'flag') {
                 prev.name += arg.name;
                 return acc;
             }
         }
+
         acc = [ ...acc, arg ];
+
         return acc;
     }, []);
 }
 
 function concatGivenFlags(args, givenFlags) {
+
     let insertionPoint = 1;
     const [ before, flags, after ] = (args || []).reduce(([ b, f, a ], v, i) => {
         if (v.type === 'flag' && (!Array.isArray(givenFlags) || givenFlags.includes(v.name))) {
@@ -101,6 +136,7 @@ function concatGivenFlags(args, givenFlags) {
             ? [ [ ...b, v ], f, a ]
             : [ b, f, [ ...a, v ] ];
     }, [ [], null, [] ]);
+
     return flags
         ? [ ...before, flags, ...after ]
         : [ ...before, ...after ];
@@ -109,13 +145,20 @@ function concatGivenFlags(args, givenFlags) {
 function tokenize(tokens, token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
 
-    if (Array.isArray(token)) return [ ...tokens, ...token.reduce((a, t) => [ ...a, ...tokenize(tokens, t, cmdPath, config) ], tokens) ];
+    if (Array.isArray(token)) return [
+        ...tokens,
+        ...token.reduce((a, t) => [
+            ...a,
+            ...tokenize(tokens, t, cmdPath, config) ], tokens)
+    ];
 
     if (token.command && cmdPath[0] === token.command) {
         if (typeof token.command !== 'string') throw new Error('Invalid Spec: command must be a string');
+
         const nextToken = token.args || [];
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[token.command] || {};
+
         return [
             ...tokens,
             {
