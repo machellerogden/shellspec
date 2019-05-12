@@ -2,30 +2,38 @@
 
 > Shell command specification and JavaScript reference implementation
 
+# Descriptor Syntax
+
+TypeScript is used below to describe the specification. TypeScript is prefered here over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It is simply here to act as a descriptor syntax.
+
 # Specification
 
-Described in TypeScript for convenience, the ShellSpec specification is as follows.
+The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface (described in TypeScript) below.
 
 ```ts
 interface Definition {
-    kind: string;
+    kind: 'shell';
     spec: Command;
 }
 
 interface Command {
     command: string;
+    collections?: {
+        [key: string]: Args
+    };
+    concatFlags?: string[] | boolean;
     args: Args;
 }
 
 interface Args {
-    // when value is `string`, implementation is expected to default to `Arg` with `type: 'option'`
+    // when value is `string`, implementation should treat as `Arg` with `name` set to value and `type` set to 'option'`
     [index: number]: Command | Arg | string;
 }
 
 interface Arg {
     name: string;
     // when `type` is not provided, implementation is expected to default to 'option'
-    type?: 'option' | 'flag' | 'value' | 'values' | string;
+    type?: 'option' | 'flag' | 'value' | 'values' | 'collection';
     required?: boolean;
     useValue?: boolean;
     useEquals?: boolean;
@@ -33,6 +41,8 @@ interface Arg {
 ```
 
 # Reference Implementation
+
+In order to demostrate the viability and make ShellSpec useful, this repo contains a reference implementation. It's usage is best described through examples.
 
 # Hello World
 
