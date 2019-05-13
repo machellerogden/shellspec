@@ -2,8 +2,9 @@
   "name": "shellspec",
   "version": "0.0.1",
   "description": "generates execable arrays from spec files",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "ava test/*.spec.js"
   },
   "repository": {
@@ -16,6 +17,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@types/node": "^12.0.0",
     "answers": "^4.0.3",
     "inquirer": "^6.3.1",
     "lodash": "^4.17.11",
@@ -23,7 +25,9 @@
   },
   "devDependencies": {
     "ava": "^1.2.1",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
   },
   "engines": {
     "node": ">=10.6.0",

@@ -1,5 +1,5 @@
 import test from 'ava';
-import ShellSpec from '..';
+import ShellSpec from '../dist';
 
 import aws from './mocks/aws';
 import docker from './mocks/docker';
