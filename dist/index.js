@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-module.exports = ShellSpec;
-const snakeCase = require('lodash/snakeCase');
-const mapKeys = require('lodash/mapKeys');
-const cloneDeep = require('lodash/cloneDeep');
-const inquirer = require('inquirer');
-const { merge } = require('sugarmerge');
-const evaluate = require('./evaluate');
-const child_process = require('child_process');
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ShellSpec;
+const snakeCase_1 = __importDefault(require("lodash/snakeCase"));
+const mapKeys_1 = __importDefault(require("lodash/mapKeys"));
+const inquirer_1 = __importDefault(require("inquirer"));
+const sugarmerge_1 = require("sugarmerge");
+const evaluate_1 = __importDefault(require("./evaluate"));
+const child_process_1 = __importDefault(require("child_process"));
 const seq = (p) => __awaiter(this, void 0, void 0, function* () {
     return yield p.reduce((chain, fn) => __awaiter(this, void 0, void 0, function* () {
         return Promise.resolve([
@@ -160,10 +163,10 @@ function tokenize(tokens, token, cmdPath, config) {
         if (token.type == null)
             token.type = 'option';
         if (typeof token.value === 'string' && token.value.includes('${')) {
-            let ctx = mapKeys(config, (v, k) => snakeCase(k));
+            let ctx = mapKeys_1.default(config, (v, k) => snakeCase_1.default(k));
             token.value = Array.isArray(token.value)
-                ? token.value.map(v => evaluate(`\`${v}\``, ctx))
-                : evaluate(`\`${token.value}\``, ctx);
+                ? token.value.map(v => evaluate_1.default(`\`${v}\``, ctx))
+                : evaluate_1.default(`\`${token.value}\``, ctx);
         }
         else {
             token.value = config[token.name] != null
@@ -273,18 +276,18 @@ function ShellSpec(definition) {
     function promptedArgv(config = {}, cmd = '') {
         return __awaiter(this, void 0, void 0, function* () {
             const prompts = getPrompts(config, cmd);
-            const answers = (yield inquirer.prompt(prompts))[main] || {};
-            return yield getArgv(merge(config, answers), cmd);
+            const answers = (yield inquirer_1.default.prompt(prompts))[main] || {};
+            return yield getArgv(sugarmerge_1.merge(config, answers), cmd);
         });
     }
     function spawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
         const [command, ...args] = getArgv(config, cmd);
-        return child_process.spawn(command, args, spawnOptions);
+        return child_process_1.default.spawn(command, args, spawnOptions);
     }
     function promptedSpawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
         return __awaiter(this, void 0, void 0, function* () {
             const [command, ...args] = yield promptedArgv(config, cmd);
-            return child_process.spawn(command, args, spawnOptions);
+            return child_process_1.default.spawn(command, args, spawnOptions);
         });
     }
     return {

@@ -1,14 +1,14 @@
 'use strict';
 
-module.exports = ShellSpec;
+export default ShellSpec;
 
-const snakeCase = require('lodash/snakeCase');
-const mapKeys = require('lodash/mapKeys');
-const cloneDeep = require('lodash/cloneDeep');
-const inquirer = require('inquirer');
-const { merge } = require('sugarmerge');
-const evaluate = require('./evaluate');
-const child_process = require('child_process');
+import snakeCase from 'lodash/snakeCase';
+import mapKeys from 'lodash/mapKeys';
+import cloneDeep from 'lodash/cloneDeep';
+import inquirer from 'inquirer';
+import { merge } from 'sugarmerge';
+import evaluate from './evaluate';
+import child_process from 'child_process';
 
 const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([
     ...(await chain),

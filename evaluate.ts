@@ -1,6 +1,6 @@
 'use strict';
 
-const vm = require('vm');
+import vm from 'vm';
 
 const evaluate = (statement, context) => {
     if (typeof context !== 'object') context = {};
@@ -8,4 +8,4 @@ const evaluate = (statement, context) => {
     return vm.runInNewContext(`${sanitizeContext}${statement}`, vm.createContext(context, { codeGeneration: { strings: false, wasm: false }}));
 };
 
-module.exports = evaluate;
+export default evaluate;
