@@ -36,6 +36,8 @@ interface Arg {
     type?: 'option' | 'flag' | 'value' | 'values' | 'variable' | 'collection';
     value?: any;
     default?: any;
+    with?: array | string;
+    without?: array | string;
     required?: boolean;
     useValue?: boolean;
     useEquals?: boolean;
