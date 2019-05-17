@@ -277,24 +277,44 @@ function parseArgv(tokens) {
                 break;
             case 'option':
                 result = `--${name}`;
-                if (useValue === false) break;
-                result = [ result, value ];
-                if (join) result = result.join(join);
+                result = useValue === false
+                    ? Array.isArray(value)
+                        ? value.map(v => result)
+                        : result
+                    : Array.isArray(value)
+                        ? join
+                            ? value.reduce((acc, v) => [ ...acc, ...[ result, v ].join(join) ], [])
+                            : value.reduce((acc, v) => [ ...acc, result, v ], [])
+                        : join
+                            ? [ result, value ].join(join)
+                            : [ result, value ];
                 break;
             case 'flag':
                 result = `-${name}`;
-                if (useValue === true) {
-                    result = [ result, value ];
-                    if (join) result.join(join);
-                } else if (join) {
-                    result = [ result, 'true' ].join(join);
-                }
+                result = useValue === true
+                    ? Array.isArray(value)
+                        ? join
+                            ? value.reduce((acc, v) => [ ...acc, ...[ result, v ].join(join) ], [])
+                            : value.reduce((acc, v) => [ ...acc, result, v ], [])
+                        : join
+                            ? [ result, value ].join(join)
+                            : [ result, value ]
+                    : Array.isArray(value)
+                        ? join
+                            ? value.reduce(acc => [ ...acc, ...[ result, true ].join(join) ], [])
+                            : value.fill(result)
+                        : join
+                            ? [ result, true ].join(join)
+                            : result;
                 break;
             default:
                 throw new Error(`invalid argument type: ${type}`);
         }
         return (result != null)
-            ? [ ...argv, ...(Array.isArray(result) ? result : [ result ]) ]
+            ? [
+                ...argv,
+                ...(Array.isArray(result) ? result : [ result ])
+              ]
             : argv;
     }, []);
 }

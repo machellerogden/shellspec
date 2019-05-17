@@ -624,3 +624,88 @@ test('concatFlags works at any level', t => {
 
     t.deepEqual(argv, output);
 });
+
+test('multiple same option', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    type: 'option'
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    const config = {
+        bar: [ 'a', 'b', 'c' ]
+    };
+
+    const argv = getArgv(config);
+
+    const output = [ 'foo', '--bar', 'a', '--bar', 'b', '--bar', 'c' ];
+
+    t.deepEqual(argv, output);
+});
+
+test('multiple same flag', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'b',
+                    type: 'flag'
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    const config = {
+        b: [ 'a', 'b', 'c' ]
+    };
+
+    const argv = getArgv(config);
+
+    const output = [ 'foo', '-b', '-b', '-b' ];
+
+    t.deepEqual(argv, output);
+});
+
+test('multiple same flag with value', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'b',
+                    type: 'flag',
+                    useValue: true
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    const config = {
+        b: [ 'a', 'b', 'c' ]
+    };
+
+    const argv = getArgv(config);
+
+    const output = [ 'foo', '-b', 'a', '-b', 'b', '-b', 'c' ];
+
+    t.deepEqual(argv, output);
+});

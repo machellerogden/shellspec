@@ -2,17 +2,19 @@
 
 > Shell command specification and JavaScript reference implementation
 
-# Descriptor Syntax
-
-TypeScript is used below to describe the specification. TypeScript is prefered over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It appears here to act as a descriptor syntax.
 
 # Specification
+
+> #### A Note on Descriptor Syntax
+TypeScript is used below to describe the specification. TypeScript is prefered over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It appears here simply to act as a descriptor syntax.
 
 The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface below.
 
 ```ts
 
-// Top-level of spec file must implement `Definition`
+/**
+ * Top-level of spec file must implement `Definition`
+ */
 interface Definition {
     kind: 'shell';
     spec: Command;
@@ -20,65 +22,108 @@ interface Definition {
 
 interface Command {
 
-    // Name of command.
+    /**
+     * Name of command.
+     */
     command: string;
 
-    // Map of named collections which are reusable throughout args and
-    // subcommands via Arg `type` = 'collection' where Arg `name` = key of on
-    // collections hash. Populated at compile time.
+    /**
+     * Map of named collections which are reusable throughout args and
+     * subcommands via Args of `type` = 'collection' where Arg `name` = {key of
+     * `collections`}. All Args of `type` = 'collection' are populated at
+     * compile time.
+     */
     collections?: {
         [key: string]: Args
     };
 
-    // When array of strings, Args of `type` = 'flag' with `name` = string will be concatonated.
-    // When boolean, all args for given command will be concatonated.
-    // Concatonation example: `-abc`
-    // Note: `useValue` is prohibited on flags when Command indicated that the
-    // given flag should be concatonated.
+    /**
+     * When array of strings, Args of `type` = 'flag' with `name` = string will
+     * be concatonated.
+     *
+     * When boolean, all args for given command will be concatonated.
+     *
+     * Concatonation Example: `-abc`
+     *
+     * Note: `useValue` is prohibited on flags when Command indicated that the
+     * given flag should be concatonated.
+     */
     concatFlags?: string[] | boolean;
 
-    // Collection of argument definitions.
+    /**
+     * Collection of argument definitions.
+     */
     args: Args;
 }
 
 interface Args {
-    // When value is `string`, implementation should treat as `Arg` with `name` set to value and `type` set to 'option'`.
+    /**
+     * When value is `string`, implementation should treat as `Arg` with `name`
+     * set to value and `type` set to 'option'`.
+     */
     [index: number]: Command | Arg | string;
 }
 
 interface Arg {
 
-    // Name of argument.
+    /**
+     * Name of argument.
+     */
     name: string;
 
-    // When `type` is not provided, implementation is expected to default to 'option'.
+    /**
+     * When `type` is not provided, implementation is expected to default to
+     * 'option'.
+     */
     type?: 'option' | 'flag' | 'value' | 'values' | 'variable' | 'collection';
 
-    // Optional hard-coded value for argument.
+    /**
+     * Optional hard-coded value for argument.
+     */
     value?: any;
 
-    // Optional default value for argument.
+    /**
+     * Optional default value for argument.
+     */
     default?: any;
 
-    // `name`(s) of other argument(s) which must exist for this argument to be valid.
+    /**
+     * `name`(s) of other argument(s) which must exist for this
+     * argument to be valid.
+     */
     with?: string[] | string;
 
-    // `name`(s) of other argument(s) which must not exist for this argument to be valid.
+    /**
+     * `name`(s) of other argument(s) which must not exist for this
+     * argument to be valid.
+     */
     without?: string[] | string;
 
-    // Indicate when or not argument is required.
+    /**
+     * Indicate when or not argument is required.
+     */
     required?: boolean;
 
-    // Defaults to `true` for Arg of `type` = "option" and to `false` for Arg of `type` = "flag".
+    /**
+     * Defaults to `true` for Arg of `type` = "option" and to `false` for Arg of
+     * `type` = "flag".
+     */
     useValue?: boolean;
 
-    // Joins name and value with given string. When `true` name and value will be joined with `=`.
+    /**
+     * Joins name and value with given string. When `true` name and value will
+     * be joined with `=`.
+     */
     join?: string | boolean;
 
-    // Message text to display to user if prompting is needed.
+    /**
+     * Message text to display to user if prompting is needed.
+     */
     message?: string;
 
-    // Description to use for help text.
+    /**
+     * Description to use for help text.
+     */
     description?: string;
 }
 ```
