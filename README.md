@@ -46,13 +46,19 @@ interface Arg {
 
 # Reference Implementation
 
-In order to demostrate the viability and make ShellSpec useful, this repo contains a reference implementation. It's usage is best described through examples below.
+In order to demostrate the viability and make ShellSpec useful, this repo contains a reference implementation.
 
-# Examples
+## Install
 
-## `echo`
+```sh
+npm i shellspec
+```
 
-One possible way to spec the `echo` shell command.
+## Usage
+
+The ShellSpec module exports a factory function.
+
+For example, here spec for the `echo` shell command is declared and an `echo` instance is created.
 
 ```js
 const ShellSpec = require('shellspec');
@@ -71,10 +77,31 @@ const spec = {
 }
 
 const echo = ShellSpec(spec);
+```
 
+When called with a spec definition, the ShellSpec factory returns an object containing several methods for contructing or executing shell commands based on the given spec.
+
+There methods are:
+
+   *  `getArgv`
+   *  `promptedArgv`
+   *  `spawn`
+   *  `promptedSpawn`
+
+Let's take a look at the above methods, one at a time.
+
+### `getArgv`
+
+The `getArgv` method, when called with valid config, will use the values of the config to return an argv array which can then be passed to an exector of your choosing.
+
+```js
 echo.getArgv({ args: [ 'hello', 'world' ] });
 
 // => [ 'echo', 'hello', 'world' ]
+
+echo.getArgv({ args: [ 'hi', 'mom' ] });
+
+// => [ 'echo', 'hi', 'mom' ]
 ````
 
 ## `aws`
@@ -184,35 +211,6 @@ const spec = {
                         type: 'option',
                         value: '${tag}'
                     },
-                    'add-host',
-                    'build-arg',
-                    'cache-from',
-                    'cgroup-parent',
-                    'compress',
-                    'cpu-period',
-                    'cpu-quota',
-                    'cpu-shares',
-                    'cpuset-cpus',
-                    'cpuset-mems',
-                    'disable-content-trust',
-                    'force-rm',
-                    'iidfile',
-                    'isolation',
-                    'label',
-                    'memory',
-                    'memory-swap',
-                    'network',
-                    'no-cache',
-                    'platform',
-                    'pull',
-                    'quiet',
-                    'rm',
-                    'security-opt',
-                    'shm-size',
-                    'squash',
-                    'stream',
-                    'target',
-                    'ulimit',
                     {
                         name: 'context',
                         type: 'value',
@@ -223,113 +221,16 @@ const spec = {
             {
                 command: 'run',
                 args: [
-                    'add-host',
-                    'attach',
-                    'blkio-weight',
-                    'blkio-weight-device',
-                    'cap-add',
-                    'cap-drop',
-                    'cgroup-parent',
-                    'cidfile',
-                    'cpu-count',
-                    'cpu-percent',
-                    'cpu-period',
-                    'cpu-quota',
-                    'cpu-rt-period',
-                    'cpu-rt-runtime',
-                    'cpu-shares',
-                    'cpus',
-                    'cpuset-cpus',
-                    'cpuset-mems',
-                    'detach',
-                    'detach-keys',
-                    'device',
-                    'device-cgroup-rule',
-                    'device-read-bps',
-                    'device-read-iops',
-                    'device-write-bps',
-                    'device-write-iops',
-                    'disable-content-trust',
-                    'dns',
-                    'dns-opt',
-                    'dns-option',
-                    'dns-search',
-                    'entrypoint',
-                    'env',
-                    'env-file',
-                    'expose',
-                    'group-add',
-                    'health-cmd',
-                    'health-interval',
-                    'health-retries',
-                    'health-start-period',
-                    'health-timeout',
-                    'help',
-                    'hostname',
-                    'init',
                     {
                         name: 'interactive',
                         type: 'option',
                         useValue: false
                     },
-                    'io-maxbandwidth',
-                    'io-maxiops',
-                    'ip',
-                    'ip6',
-                    'ipc',
-                    'isolation',
-                    'kernel-memory',
-                    'label',
-                    'label-file',
-                    'link',
-                    'link-local-ip',
-                    'log-driver',
-                    'log-opt',
-                    'mac-address',
-                    'memory',
-                    'memory-reservation',
-                    'memory-swap',
-                    'memory-swappiness',
-                    'mount',
-                    'container-name',
-                    'net',
-                    'net-alias',
-                    'network',
-                    'network-alias',
-                    'no-healthcheck',
-                    'oom-kill-disable',
-                    'oom-score-adj',
-                    'pid',
-                    'pids-limit',
-                    'platform',
-                    'privileged',
-                    'publish',
-                    'publish-all',
-                    'read-only',
-                    'restart',
-                    'rm',
-                    'runtime',
-                    'security-opt',
-                    'shm-size',
-                    'sig-proxy',
-                    'stop-signal',
-                    'stop-timeout',
-                    'storage-opt',
-                    'sysctl',
-                    'tmpfs',
                     {
                         name: 'tty',
                         type: 'option',
                         useValue: false
                     },
-                    'ulimit',
-                    'user',
-                    'userns',
-                    'uts',
-                    'volume',
-                    'volume-driver',
-                    'volumes-from',
-                    'workdir',
                     {
                         name: 'tag',
                         type: 'collection'
@@ -348,11 +249,6 @@ const spec = {
             {
                 command: 'push',
                 args: [
-                    {
-                        name: 'disable-content-trust',
-                        type: 'option',
-                        default: true
-                    },
                     {
                         name: 'tag',
                         type: 'collection'
