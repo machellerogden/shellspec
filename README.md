@@ -147,8 +147,13 @@ Save the above in a file named `myecho` and make it executable (`chmod +x myecho
 
 ```sh
 ./myecho
-? echo.args hello,world
+? echo.args hello world
 [ 'echo', 'hello', 'world' ]
+
+# Note: When entering input for prompts, escape spaces with a backslash to for single arguments containing spaces.
+./myecho
+? echo.args hello\ world
+[ 'echo', 'hello world' ]
 ```
 
 ### `spawn`

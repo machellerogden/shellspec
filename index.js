@@ -98,10 +98,10 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
         return [ ...acc, {
             name,
             type: 'input',
-            filter: v => v.split(',').reduce((a, b, i, c) => {
+            filter: v => v.split(' ').reduce((a, b, i, c) => {
                 if (i < c.length) {
                     if (b.endsWith('\\')) {
-                        b = [ b.slice(0, -1),  c[i + 1] ].join(',');
+                        b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
                         c.splice(i + 1, 1);
                     }
                 }

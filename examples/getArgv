@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+const ShellSpec = require('..');
+
+const spec = {
+    kind: 'shell',
+    spec: {
+        command: 'echo',
+        args: [
+            {
+                name: 'args',
+                type: 'values'
+            }
+        ]
+    }
+};
+
+const echo = ShellSpec(spec);
+
+console.log(echo.getArgv({ args: process.argv.slice(2) }));
