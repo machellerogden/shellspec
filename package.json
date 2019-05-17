@@ -4,7 +4,8 @@
   "description": "generates execable arrays from spec files",
   "main": "index.js",
   "scripts": {
-    "test": "ava test/*.spec.js"
+    "test": "ava test/*.spec.js",
+    "test:inspect": "node --inspect-brk ./node_modules/ava/profile.js ./test/*.spec.js"
   },
   "repository": {
     "type": "git",

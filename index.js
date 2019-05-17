@@ -142,15 +142,13 @@ function concatGivenFlags(args, givenFlags) {
         : [ ...before, ...after ];
 }
 
-function tokenize(tokens, token, cmdPath, config) {
+function tokenize(token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
 
-    if (Array.isArray(token)) return [
-        ...tokens,
-        ...token.reduce((a, t) => [
-            ...a,
-            ...tokenize(tokens, t, cmdPath, config) ], tokens)
-    ];
+    if (Array.isArray(token)) return token.reduce((a, t) => [
+        ...a,
+        ...tokenize(t, cmdPath, config)
+    ], []);
 
     if (token.command && cmdPath[0] === token.command) {
         if (typeof token.command !== 'string') throw new Error('Invalid Spec: command must be a string');
@@ -158,15 +156,31 @@ function tokenize(tokens, token, cmdPath, config) {
         const nextToken = token.args || [];
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[token.command] || {};
+        const nextConcatFlags = token.concatFlags;
+
+        const nextTokens = tokenize(nextToken, nextCmdPath, nextConfig)
+        const nextCmdIdx = nextTokens.findIndex(t => t.command);
+
+        let ownTokens = nextCmdIdx == -1
+            ? nextTokens
+            : nextTokens.slice(0, nextCmdIdx);
+
+        const restTokens = nextCmdIdx == -1
+            ? []
+            : nextTokens.slice(nextCmdIdx);
+
+        if (nextConcatFlags === 'adjacent') ownTokens = concatAdjacentFlags(ownTokens);
+        if (nextConcatFlags === true || Array.isArray(nextConcatFlags)) ownTokens = concatGivenFlags(ownTokens, nextConcatFlags);
 
         return [
-            ...tokens,
             {
                 name: token.command,
                 type: 'value',
+                command: true,
                 value: token.command
             },
-            ...tokenize(tokens, nextToken, nextCmdPath, nextConfig)
+            ...ownTokens,
+            ...restTokens
         ];
     }
 
@@ -191,10 +205,11 @@ function tokenize(tokens, token, cmdPath, config) {
         if (token.type === 'variable') {
             config[token.name] = token.value;
         } else {
-            return [ ...tokens, token ];
+            return [ token ];
         }
     }
-    return tokens;
+
+    return [];
 }
 
 function parseArgv(tokens) {
@@ -204,11 +219,17 @@ function parseArgv(tokens) {
             name,
             type = 'option',
             value,
-            useEquals,
+            join = false,
             useValue,
             with:w,
             without:wo
         } = arg;
+
+        if (join) {
+            join = typeof join === 'string'
+                ? join
+                : '=';
+        }
 
         if (w) {
             w = Array.isArray(w)
@@ -242,15 +263,15 @@ function parseArgv(tokens) {
                 result = `--${name}`;
                 if (useValue === false) break;
                 result = [ result, value ];
-                if (useEquals === true) result = result.join('=');
+                if (join) result = result.join(join);
                 break;
             case 'flag':
                 result = `-${name}`;
                 if (useValue === true) {
                     result = [ result, value ];
-                    if (useEquals === true) result.join('=');
-                } else if (useEquals === true) {
-                    result = [ result, 'true' ].join('=');
+                    if (join) result.join(join);
+                } else if (join) {
+                    result = [ result, 'true' ].join(join);
                 }
                 break;
             default:
@@ -278,12 +299,9 @@ function ShellSpec(definition) {
 
     spec = populateCollections(spec);
     const main = spec.command;
-    const concatFlags = spec.concatFlags;
 
     function getTokens(config = {}, cmdPath = []) {
-        let tokens = tokenize([], spec, cmdPath, config);
-        if (concatFlags === 'adjacent') tokens = concatAdjacentFlags(tokens);
-        if (concatFlags === true || Array.isArray(concatFlags)) tokens = concatGivenFlags(tokens, concatFlags);
+        let tokens = tokenize(spec, cmdPath, config);
         return tokens;
     }
 

@@ -32,15 +32,21 @@ interface Args {
 
 interface Arg {
     name: string;
+
     // when `type` is not provided, implementation is expected to default to 'option'
     type?: 'option' | 'flag' | 'value' | 'values' | 'variable' | 'collection';
+
     value?: any;
     default?: any;
     with?: string[] | string;
     without?: string[] | string;
     required?: boolean;
+
+    // defaults to `true` for Arg of `type` = "option" and to `false` for Arg of `type` = "flag"
     useValue?: boolean;
-    useEquals?: boolean;
+
+    // joins name and value with given string. When `true` name and value will be joined with `=`.
+    join?: string | boolean;
 }
 ```
 

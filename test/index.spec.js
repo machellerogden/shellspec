@@ -519,7 +519,7 @@ test('concatFlags cannot be used with useValue', t => {
     t.throws(() => getArgv(config, 'foo'), 'Invalid use of `useValue` on concatted flag `c`');
 });
 
-test('concatFlags only works at the top level - though someday it will probably work at any level', t => {
+test('concatFlags works at any level', t => {
 
     const spec = {
         kind: 'shell',
@@ -527,20 +527,67 @@ test('concatFlags only works at the top level - though someday it will probably 
             command: 'foo',
             args: [
                 {
+                    name: 'a',
+                    type: 'flag'
+                },
+                {
+                    name: 'b',
+                    type: 'flag'
+                },
+                {
+                    name: 'c',
+                    type: 'flag'
+                },
+                {
                     command: 'bar',
                     concatFlags: true,
                     args: [
                         {
-                            name: 'a',
+                            name: 'd',
                             type: 'flag'
                         },
                         {
-                            name: 'b',
+                            name: 'e',
                             type: 'flag'
                         },
                         {
-                            name: 'c',
+                            name: 'f',
                             type: 'flag'
+                        },
+                        {
+                            command: 'baz',
+                            args: [
+                                {
+                                    name: 'g',
+                                    type: 'flag'
+                                },
+                                {
+                                    name: 'h',
+                                    type: 'flag'
+                                },
+                                {
+                                    name: 'i',
+                                    type: 'flag'
+                                },
+                                {
+                                    command: 'qux',
+                                    concatFlags: [ 'j', 'l' ],
+                                    args: [
+                                        {
+                                            name: 'j',
+                                            type: 'flag'
+                                        },
+                                        {
+                                            name: 'k',
+                                            type: 'flag'
+                                        },
+                                        {
+                                            name: 'l',
+                                            type: 'flag'
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
@@ -551,16 +598,29 @@ test('concatFlags only works at the top level - though someday it will probably 
     const { getArgv } = ShellSpec(spec);
 
     const config = {
+        a: true,
+        b: true,
+        c: true,
         bar: {
-            a: true,
-            b: true,
-            c: true
+            d: true,
+            e: true,
+            f: true,
+            baz: {
+                g: true,
+                h: true,
+                i: true,
+                qux: {
+                    j: true,
+                    k: true,
+                    l: true
+                }
+            }
         }
     };
 
-    const argv = getArgv(config, 'bar');
+    const argv = getArgv(config, 'bar.baz.qux');
 
-    const output = [ 'foo', 'bar', '-a', '-b', '-c' ];
+    const output = [ 'foo', '-a', '-b', '-c', 'bar', '-def', 'baz', '-g', '-h', '-i', 'qux', '-jl', '-k' ];
 
     t.deepEqual(argv, output);
 });
