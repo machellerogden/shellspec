@@ -67,15 +67,14 @@ function populateCollections(obj) {
     return walk(acc);
 }
 
-function prompts(acc, cmdPath, args, config, cmdKey) {
+function prompts(cmdPath, args, config, cmdKey) {
     if (args == null) throw new Error('invalid arguments');
 
     if (Array.isArray(args)) return [
-        ...acc,
         ...args.reduce((a, v) => [
             ...a,
-            ...prompts(acc, cmdPath, v, config, cmdKey)
-        ], acc)
+            ...prompts(cmdPath, v, config, cmdKey)
+        ], [])
     ];
 
     if (args.command && cmdPath[0] === args.command) {
@@ -85,8 +84,7 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
         const nextArgs = args.args || [];
 
         return [
-            ...acc,
-            ...prompts(acc, nextCmdPath, nextArgs, nextConfig, cmdKey)
+            ...prompts(nextCmdPath, nextArgs, nextConfig, cmdKey)
         ];
     }
 
@@ -94,9 +92,11 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
 
     if (config[args.name] == null && args.required) {
         const name = `${cmdKey}.${args.name}`;
+        const message = args.message || name;
 
-        return [ ...acc, {
+        return [ {
             name,
+            message,
             type: 'input',
             filter: v => v.split(' ').reduce((a, b, i, c) => {
                 if (i < c.length) {
@@ -107,12 +107,11 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
                 }
                 a = [ ...a, b ];
                 return a;
-            }, []),
-            message: name
+            }, [])
         } ];
     }
 
-    return acc;
+    return [];
 }
 
 function concatAdjacentFlags(args) {
@@ -335,7 +334,7 @@ function ShellSpec(definition) {
 
     function getPrompts(config = {}, cmd = '') {
         cmd = getCmdPath(main, cmd);
-        return prompts([], cmd, spec, { [main]: config }, cmd.join('.'));
+        return prompts(cmd, spec, { [main]: config }, cmd.join('.'));
     }
 
     function getArgv(config = {}, cmd = '') {

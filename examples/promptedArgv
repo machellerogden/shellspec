@@ -12,7 +12,8 @@ const spec = {
                 type: 'values',
 
                 // here we add a `required` property to the spec which indicate the user should be prompted if this config value is missing
-                required: true
+                required: true,
+                message: 'What values would you like to echo?'
 
             }
         ]

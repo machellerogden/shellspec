@@ -11,42 +11,75 @@ TypeScript is used below to describe the specification. TypeScript is prefered o
 The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface below.
 
 ```ts
+
+// Top-level of spec file must implement `Definition`
 interface Definition {
     kind: 'shell';
     spec: Command;
 }
 
 interface Command {
+
+    // Name of command.
     command: string;
+
+    // Map of named collections which are reusable throughout args and
+    // subcommands via Arg `type` = 'collection' where Arg `name` = key of on
+    // collections hash. Populated at compile time.
     collections?: {
         [key: string]: Args
     };
+
+    // When array of strings, Args of `type` = 'flag' with `name` = string will be concatonated.
+    // When boolean, all args for given command will be concatonated.
+    // Concatonation example: `-abc`
+    // Note: `useValue` is prohibited on flags when Command indicated that the
+    // given flag should be concatonated.
     concatFlags?: string[] | boolean;
+
+    // Collection of argument definitions.
     args: Args;
 }
 
 interface Args {
-    // when value is `string`, implementation should treat as `Arg` with `name` set to value and `type` set to 'option'`
+    // When value is `string`, implementation should treat as `Arg` with `name` set to value and `type` set to 'option'`.
     [index: number]: Command | Arg | string;
 }
 
 interface Arg {
+
+    // Name of argument.
     name: string;
 
-    // when `type` is not provided, implementation is expected to default to 'option'
+    // When `type` is not provided, implementation is expected to default to 'option'.
     type?: 'option' | 'flag' | 'value' | 'values' | 'variable' | 'collection';
 
+    // Optional hard-coded value for argument.
     value?: any;
+
+    // Optional default value for argument.
     default?: any;
+
+    // `name`(s) of other argument(s) which must exist for this argument to be valid.
     with?: string[] | string;
+
+    // `name`(s) of other argument(s) which must not exist for this argument to be valid.
     without?: string[] | string;
+
+    // Indicate when or not argument is required.
     required?: boolean;
 
-    // defaults to `true` for Arg of `type` = "option" and to `false` for Arg of `type` = "flag"
+    // Defaults to `true` for Arg of `type` = "option" and to `false` for Arg of `type` = "flag".
     useValue?: boolean;
 
-    // joins name and value with given string. When `true` name and value will be joined with `=`.
+    // Joins name and value with given string. When `true` name and value will be joined with `=`.
     join?: string | boolean;
+
+    // Message text to display to user if prompting is needed.
+    message?: string;
+
+    // Description to use for help text.
+    description?: string;
 }
 ```
 
@@ -150,7 +183,7 @@ Save the above in a file named `myecho` and make it executable (`chmod +x myecho
 ? echo.args hello world
 [ 'echo', 'hello', 'world' ]
 
-# Note: When entering input for prompts, escape spaces with a backslash to for single arguments containing spaces.
+# Note: When entering input for prompts, you can escape spaces with a backslash for single arguments which contain spaces.
 ./myecho
 ? echo.args hello\ world
 [ 'echo', 'hello world' ]
