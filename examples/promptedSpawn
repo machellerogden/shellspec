@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+const ShellSpec = require('..');
+
+const spec = {
+    kind: 'shell',
+    spec: {
+        command: 'echo',
+        args: [
+            {
+                name: 'args',
+                type: 'values',
+
+                // here we add a `required` property to the spec which indicate the user should be prompted if this config value is missing
+                required: true
+
+            }
+        ]
+    }
+};
+
+const echo = ShellSpec(spec);
+
+(async () => await echo.promptedSpawn())(); // resolves <ChildProcess>

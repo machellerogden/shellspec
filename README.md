@@ -64,7 +64,7 @@ npm i shellspec
 
 The ShellSpec module exports a factory function.
 
-For example, here spec for the `echo` shell command is declared and an `echo` instance is created.
+For example, here the spec for the `echo` shell command is declared and an `echo` instance is created.
 
 ```js
 const ShellSpec = require('shellspec');
@@ -85,9 +85,9 @@ const spec = {
 const echo = ShellSpec(spec);
 ```
 
-When called with a spec definition, the ShellSpec factory returns an object containing several methods for contructing or executing shell commands based on the given spec.
+When called with a spec definition, the ShellSpec factory returns an instance containing several methods for contructing or executing shell commands based on the given spec.
 
-There methods are:
+The primary methods exposed are as follows:
 
    *  `getArgv`
    *  `promptedArgv`
@@ -98,7 +98,7 @@ Let's take a look at the above methods, one at a time.
 
 ### `getArgv`
 
-The `getArgv` method, when called with valid config, will use the values of the config to return an argv array which can then be passed to an exector of your choosing.
+The `getArgv` method, when called with valid config, will use the values of the config to return an argv array which can then be passed to an shell executor of your choosing.
 
 ```js
 echo.getArgv({ args: [ 'hello', 'world' ] });
@@ -110,10 +110,112 @@ echo.getArgv({ args: [ 'hi', 'mom' ] });
 // => [ 'echo', 'hi', 'mom' ]
 ````
 
+### `promptedArgv`
+
+The `promptedArgv` method works the same as `getArgv` except that it returns a promise and will prompt the user for any required argument config which was not provided programmatically.
+
+In order to demostrate this, we must make our script executable from the command-line and make a small edit to the `echo` spec we defined above, making the `args` argument required.
+
+```js
+#!/usr/bin/env node
+
+const ShellSpec = require('shellspec');
+
+const spec = {
+    kind: 'shell',
+    spec: {
+        command: 'echo',
+        args: [
+            {
+                name: 'args',
+                type: 'values',
+
+                // here we add a `required` property to the spec which indicate the user should be prompted if this config value is missing
+                required: true
+
+            }
+        ]
+    }
+};
+
+const echo = ShellSpec(spec);
+
+(async () => console.log(await echo.promptedArgv()))();
+```
+
+Save the above in a file named `myecho` and make it executable (`chmod +x myecho`), and and run it from your shell.
+
+```sh
+./myecho
+? echo.args hello,world
+[ 'echo', 'hello', 'world' ]
+```
+
+### `spawn`
+
+The `spawn` method works the same as `getArgv` except that it will execute the resolved command as a node child_process.
+
+```js
+#!/usr/bin/env node
+
+const ShellSpec = require('shellspec');
+
+const spec = {
+    kind: 'shell',
+    spec: {
+        command: 'echo',
+        args: [
+            {
+                name: 'args',
+                type: 'values'
+            }
+        ]
+    }
+};
+
+const echo = ShellSpec(spec);
+
+echo.spawn(); // returns <ChildProcess>
+```
+
+### `promptedSpawn`
+
+The `promptedspawn` method works the same as `promptedArgv` except that it will execute the resolved command as a node child_process.
+
+```js
+#!/usr/bin/env node
+
+const ShellSpec = require('shellspec');
+
+const spec = {
+    kind: 'shell',
+    spec: {
+        command: 'echo',
+        args: [
+            {
+                name: 'args',
+                type: 'values',
+
+                // here we add a `required` property to the spec which indicate the user should be prompted if this config value is missing
+                required: true
+
+            }
+        ]
+    }
+};
+
+const echo = ShellSpec(spec);
+
+(async () => await echo.promptedSpawn())(); // resolves <ChildProcess>
+```
+
+# Using the Spec
+
+For now, let's just learn by example. Take a look over some of the examples below to better understand how some of the available options on the spec affect the command output.
+
 ## `aws`
 
 Here's a small piece of what could become a full AWS CLI spec. This demostrates how to define and work with subcommands.
-
 
 ```js
 

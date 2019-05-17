@@ -10,6 +10,7 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
+// TODO: I use this super basic promise chain reducer all over the place ... really should just publish as a separate package.
 const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([
     ...(await chain),
     await fn()
@@ -37,7 +38,10 @@ function populateCollections(obj) {
     const acc = { ...obj };
     const collections = getCollections(obj);
 
-    // TODO: make readable... sorry world, I was rushing
+    // TODO:
+    // make this actually readable and break it into more generic pieces.
+    // it probably should just use a simple visitor pattern.
+    // sorry world, I was rushing.
     function walk(value) {
         return typeof value === 'object'
             ? Array.isArray(value)
@@ -80,7 +84,10 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
         const nextConfig = config[args.command] || {};
         const nextArgs = args.args || [];
 
-        return [ ...acc, ...prompts(acc, nextCmdPath, nextArgs, nextConfig, cmdKey) ];
+        return [
+            ...acc,
+            ...prompts(acc, nextCmdPath, nextArgs, nextConfig, cmdKey)
+        ];
     }
 
     if (typeof args === 'string') args = { name: args };
@@ -91,6 +98,16 @@ function prompts(acc, cmdPath, args, config, cmdKey) {
         return [ ...acc, {
             name,
             type: 'input',
+            filter: v => v.split(',').reduce((a, b, i, c) => {
+                if (i < c.length) {
+                    if (b.endsWith('\\')) {
+                        b = [ b.slice(0, -1),  c[i + 1] ].join(',');
+                        c.splice(i + 1, 1);
+                    }
+                }
+                a = [ ...a, b ];
+                return a;
+            }, []),
             message: name
         } ];
     }
@@ -285,14 +302,25 @@ function parseArgv(tokens) {
 
 function getCmdPath(main, cmd) {
     return cmd
-        ? [ main, ...(Array.isArray(cmd) ? cmd : (cmd || '').split('.')) ]
+        ? [
+            main,
+            ...(Array.isArray(cmd)
+                ? cmd
+                : (cmd || '').split('.'))
+          ]
         : [ main ];
 }
 
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
-    let { spec, label, alias, config:boundConfig = {}, silent } = definition;
+    let {
+        spec,
+        label,
+        alias,
+        config:boundConfig = {},
+        silent
+    } = definition;
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
     if (!spec.command) throw new Error('invalid spec - missing main command definition');
