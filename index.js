@@ -228,6 +228,51 @@ function tokenize(token, cmdPath, config) {
     return [];
 }
 
+function kvJoin(key, value, type, delimiter, useValue) {
+    return useValue === false
+        ? Array.isArray(value)
+            ? value.map(v => result)
+            : key
+        : type === 'option' || useValue === true
+            ? Array.isArray(value)
+                ? delimiter
+                    ? value.reduce((acc, v) => [
+                        ...acc,
+                        ...[ key, v ].join(delimiter)
+                      ], [])
+                    : value.reduce((acc, v) => [
+                        ...acc,
+                        key,
+                        v
+                      ], [])
+                : delimiter
+                    ? [ key, value ].join(delimiter)
+                    : [ key, value ]
+            : Array.isArray(value)
+                ? delimiter
+                    ? value.reduce(acc => [ ...acc, ...[ key, true ].join(delimiter) ], [])
+                    : value.fill(key)
+                : delimiter
+                    ? [ key, true ].join(delimiter)
+                    : key
+}
+
+function validate(testSet, tokens, type, name, toggle) {
+    testSet = Array.isArray(testSet)
+        ? testSet
+        : [ testSet ];
+    if (toggle) {
+        if (!tokens.find(v => testSet.includes(v.name))) {
+            throw new Error(`the ${type} \`${name}\` must be accompanied by \`${testSet.join('\`, `')}\``);
+        }
+    } else {
+        const result = tokens.find(v => testSet.includes(v.name));
+        if (result) {
+            throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
+        }
+    }
+}
+
 function parseArgv(tokens) {
     return tokens.reduce((argv, arg) => {
 
@@ -235,36 +280,21 @@ function parseArgv(tokens) {
             name,
             type = 'option',
             value,
-            join = false,
+            join:delimiter = false,
             useValue,
             with:w,
             without:wo
         } = arg;
 
-        if (join) {
-            join = typeof join === 'string'
-                ? join
+        if (delimiter) {
+            delimiter = typeof delimiter === 'string'
+                ? delimiter
                 : '=';
         }
 
-        if (w) {
-            w = Array.isArray(w)
-                ? w
-                : [ w ];
-            if (!tokens.find(v => w.includes(v.name))) {
-                throw new Error(`the ${type} \`${name}\` must be accompanied by \`${w.join('\`, `')}\``);
-            }
-        }
+        if (w) validate(w, tokens, type, name, true);
 
-        if (wo) {
-            wo = Array.isArray(wo)
-                ? wo
-                : [ wo ];
-            const bad = tokens.find(v => wo.includes(v.name));
-            if (bad) {
-                throw new Error(`the ${type} \`${name}\` and the ${bad.type} \`${bad.name}\` cannot be used together`);
-            }
-        }
+        if (wo) validate(wo, tokens, type, name);
 
         let result;
 
@@ -276,36 +306,10 @@ function parseArgv(tokens) {
                 result = value;
                 break;
             case 'option':
-                result = `--${name}`;
-                result = useValue === false
-                    ? Array.isArray(value)
-                        ? value.map(v => result)
-                        : result
-                    : Array.isArray(value)
-                        ? join
-                            ? value.reduce((acc, v) => [ ...acc, ...[ result, v ].join(join) ], [])
-                            : value.reduce((acc, v) => [ ...acc, result, v ], [])
-                        : join
-                            ? [ result, value ].join(join)
-                            : [ result, value ];
+                result = kvJoin(`--${name}`, value, type, delimiter, useValue);
                 break;
             case 'flag':
-                result = `-${name}`;
-                result = useValue === true
-                    ? Array.isArray(value)
-                        ? join
-                            ? value.reduce((acc, v) => [ ...acc, ...[ result, v ].join(join) ], [])
-                            : value.reduce((acc, v) => [ ...acc, result, v ], [])
-                        : join
-                            ? [ result, value ].join(join)
-                            : [ result, value ]
-                    : Array.isArray(value)
-                        ? join
-                            ? value.reduce(acc => [ ...acc, ...[ result, true ].join(join) ], [])
-                            : value.fill(result)
-                        : join
-                            ? [ result, true ].join(join)
-                            : result;
+                result = kvJoin(`-${name}`, value, type, delimiter, useValue);
                 break;
             default:
                 throw new Error(`invalid argument type: ${type}`);
