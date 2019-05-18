@@ -10,36 +10,30 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
-// TODO: I use this super basic promise chain reducer all over the place ... really should just publish as a separate package.
-const seq = async p => await p.reduce(async (chain, fn) => Promise.resolve([
-    ...(await chain),
-    await fn()
-]), Promise.resolve([]));
-
-const getCollections = (obj, acc = {}) => typeof obj === 'object'
+const getByKeyDeep = (obj, key, acc = {}) => typeof obj === 'object'
     ? Array.isArray(obj)
         ? {
             ...acc,
             ...obj.reduce((a, v) =>
-                getCollections(v, a),
+                getByKeyDeep(v, key, a),
                 {})
           }
         : {
             ...acc,
             ...Object.entries(obj).reduce((a, [ k, v ]) =>
-                k === 'collections'
+                k === key
                     ? { ...a, ...v }
-                    : getCollections(v, a),
+                    : getByKeyDeep(v, key, a),
                 {})
           }
     : acc;
 
 function populateCollections(obj) {
     const acc = { ...obj };
-    const collections = getCollections(obj);
+    const collections = getByKeyDeep(obj, 'collections');
 
     // TODO:
-    // make this actually readable and break it into more generic pieces.
+    // make this actually readable and break it into generic pieces.
     // it probably should just use a simple visitor pattern.
     // sorry world, I was rushing.
     function walk(value) {
@@ -70,12 +64,10 @@ function populateCollections(obj) {
 function prompts(cmdPath, args, config, cmdKey) {
     if (args == null) throw new Error('invalid arguments');
 
-    if (Array.isArray(args)) return [
-        ...args.reduce((a, v) => [
-            ...a,
-            ...prompts(cmdPath, v, config, cmdKey)
-        ], [])
-    ];
+    if (Array.isArray(args)) return args.reduce((a, v) => [
+        ...a,
+        ...prompts(cmdPath, v, config, cmdKey)
+    ], []);
 
     if (args.command && cmdPath[0] === args.command) {
         if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
@@ -261,15 +253,11 @@ function validate(testSet, tokens, type, name, toggle) {
     testSet = Array.isArray(testSet)
         ? testSet
         : [ testSet ];
-    if (toggle) {
-        if (!tokens.find(v => testSet.includes(v.name))) {
-            throw new Error(`the ${type} \`${name}\` must be accompanied by \`${testSet.join('\`, `')}\``);
-        }
-    } else {
-        const result = tokens.find(v => testSet.includes(v.name));
-        if (result) {
-            throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
-        }
+    const result = tokens.find(v => testSet.includes(v.name));
+    if (toggle && !result) {
+        throw new Error(`the ${type} \`${name}\` must be accompanied by \`${testSet.join('\`, `')}\``);
+    } else if (!toggle && result) {
+        throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
     }
 }
 
