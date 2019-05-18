@@ -5,10 +5,10 @@
 
 # Specification
 
+The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface below.
+
 > #### A Note on Descriptor Syntax
 TypeScript is used below to describe the specification. TypeScript is prefered over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It appears here simply to act as a descriptor syntax.
-
-The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface below.
 
 ```ts
 
@@ -88,6 +88,11 @@ interface Arg {
     default?: any;
 
     /**
+     * Array of valid values for given Arg.
+     */
+    choices?: string[];
+
+    /**
      * `name`(s) of other argument(s) which must exist for this
      * argument to be valid.
      */
@@ -163,7 +168,7 @@ const spec = {
 const echo = ShellSpec(spec);
 ```
 
-When called with a spec definition, the ShellSpec factory returns an instance containing several methods for contructing or executing shell commands based on the given spec.
+When called with a spec definition, the ShellSpec factory returns an instance containing several methods for constructing or executing shell commands based on the given spec.
 
 The primary methods exposed are as follows:
 
@@ -176,7 +181,7 @@ Let's take a look at the above methods, one at a time.
 
 ### `getArgv`
 
-The `getArgv` method, when called with valid config, will use the values of the config to return an argv array which can then be passed to an shell executor of your choosing.
+The `getArgv` method, when called with valid config, will use the values of the given config to return an argv array which can then be passed to a shell executor of your choosing.
 
 ```js
 echo.getArgv({ args: [ 'hello', 'world' ] });

@@ -85,8 +85,7 @@ function prompts(cmdPath, args, config, cmdKey) {
     if (config[args.name] == null && args.required) {
         const name = `${cmdKey}.${args.name}`;
         const message = args.message || name;
-
-        return [ {
+        const prompt = {
             name,
             message,
             type: 'input',
@@ -100,7 +99,12 @@ function prompts(cmdPath, args, config, cmdKey) {
                 a = [ ...a, b ];
                 return a;
             }, [])
-        } ];
+        };
+        if (args.choices) {
+            prompt.type = 'list';
+            prompt.choices = args.choices;
+        }
+        return [ prompt ];
     }
 
     return [];
@@ -249,7 +253,15 @@ function kvJoin(key, value, type, delimiter, useValue) {
                     : key
 }
 
-function validate(testSet, tokens, type, name, toggle) {
+function validateValue(choices, value, name, type) {
+    if (Array.isArray(value)
+        ? value.reduce((a, v) => a && !choices.includes(v), true)
+        : !choices.includes(value)) {
+        throw new Error(`the ${type} \`${name}\` has invalid value of "${value}". Valid values are: ${choices.map(v => `"${v}"`).join(', ')}`);
+    }
+}
+
+function validateContext(testSet, tokens, type, name, toggle) {
     testSet = Array.isArray(testSet)
         ? testSet
         : [ testSet ];
@@ -271,7 +283,8 @@ function parseArgv(tokens) {
             join:delimiter = false,
             useValue,
             with:w,
-            without:wo
+            without:wo,
+            choices
         } = arg;
 
         if (delimiter) {
@@ -280,9 +293,11 @@ function parseArgv(tokens) {
                 : '=';
         }
 
-        if (w) validate(w, tokens, type, name, true);
+        if (Array.isArray(choices)) validateValue(choices, value, name, type);
 
-        if (wo) validate(wo, tokens, type, name);
+        if (w) validateContext(w, tokens, type, name, true);
+
+        if (wo) validateContext(wo, tokens, type, name);
 
         let result;
 

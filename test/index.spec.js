@@ -709,3 +709,29 @@ test('multiple same flag with value', t => {
 
     t.deepEqual(argv, output);
 });
+
+test('arg can specify valid values as "choices"', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    type: 'option',
+                    choices: [
+                        'a',
+                        'b',
+                        'c'
+                    ]
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    t.deepEqual(getArgv({ bar: 'a' }), [ 'foo', '--bar', 'a' ]);
+    t.throws(() => getArgv({ bar: 'd' }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
+});
