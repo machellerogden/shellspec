@@ -153,6 +153,9 @@ function concatGivenFlags(args, givenFlags) {
         ? [ ...before, flags, ...after ]
         : [ ...before, ...after ];
 }
+const isTemplated = value =>
+    (typeof value === 'string' && value.includes('${'))
+    || (Array.isArray(value) && value.reduce((acc, v) => acc || v.includes('${'), false));
 
 function tokenize(token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
@@ -202,7 +205,7 @@ function tokenize(token, cmdPath, config) {
 
     if (config[token.name] || [ 'variable' ].includes(token.type)) {
         if (token.type == null) token.type = 'option';
-        if (typeof token.value === 'string' && token.value.includes('${')) {
+        if (isTemplated(token.value)) {
             let ctx = mapKeys(config, (v, k) => snakeCase(k));
             token.value = Array.isArray(token.value)
                     ? token.value.map(v => evaluate(`\`${v}\``, ctx))
