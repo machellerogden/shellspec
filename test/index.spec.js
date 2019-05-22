@@ -736,19 +736,19 @@ test('arg can specify valid values as "choices"', t => {
     t.throws(() => getArgv({ bar: 'd' }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
 });
 
-test('double dash args are possible - but we should make this better', t => {
+test('double dash args are possible', t => {
 
     const { getArgv } = ShellSpec(git);
 
     const config = {
         add: {
-            pathspec: './src'
+            pathspec: [ './src', './dist' ]
         }
     };
 
     const argv = getArgv(config, 'add');
 
-    const output = [ 'git', 'add', '--', './src' ];
+    const output = [ 'git', 'add', '--', './src', './dist' ];
 
     t.deepEqual(argv, output);
 });

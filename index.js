@@ -306,10 +306,13 @@ function parseArgv(tokens) {
 
         switch (type) {
             case 'value':
-                result = value;
-                break;
             case 'values':
                 result = value;
+                break;
+            case '--':
+                result = Array.isArray(value)
+                    ? [ '--', ...value ]
+                    : [ '--', value ];
                 break;
             case 'option':
                 result = kvJoin(`--${name}`, value, type, delimiter, useValue);
@@ -340,6 +343,20 @@ function getCmdPath(main, cmd) {
         : [ main ];
 }
 
+function listConfig(spec, prefix) {
+    if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
+    return Array.isArray(spec)
+        ? spec.reduce((acc, arg) => {
+            if (arg.command) {
+                acc = [ ...acc, ...listConfig(arg.args || [], prefix ? `${prefix}.${arg.command}` : arg.command) ];
+            } else if (arg.name) {
+                acc = [ ...acc, prefix ? `${prefix}.${arg.name}` : arg.name ];
+            }
+            return acc;
+        }, [])
+        : spec.command && [ ...listConfig(spec.args || []) ];
+}
+
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
@@ -356,6 +373,10 @@ function ShellSpec(definition) {
 
     spec = populateCollections(spec);
     const main = spec.command;
+
+    function getConfigPaths() {
+        return listConfig(spec);
+    }
 
     function getTokens(config = {}, cmdPath = []) {
         let tokens = tokenize(spec, cmdPath, config);
@@ -391,6 +412,7 @@ function ShellSpec(definition) {
     }
 
     return {
+        getConfigPaths,
         getPrompts,
         getArgv,
         promptedArgv,

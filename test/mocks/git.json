@@ -3,7 +3,7 @@
   "spec": {
     "command": "git",
     "collections": {
-        "ctrl": [
+        "core-options": [
             {
                 "name": "verbose",
                 "type": "option",
@@ -151,7 +151,7 @@
         "command": "add",
         "args": [
             {
-                "name": "ctrl",
+                "name": "core-options",
                 "type": "collection"
             },
             {
@@ -266,12 +266,7 @@
             },
             {
                 "name": "pathspec",
-                "type": "variable"
-            },
-            {
-                "name": "pathspec",
-                "type": "value",
-                "value": [ "--", "${pathspec}" ]
+                "type": "--"
             }
         ]
       },
