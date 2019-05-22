@@ -203,7 +203,7 @@ function tokenize(token, cmdPath, config) {
 
     if (config[token.name] == null && token.default) config[token.name] = token.default;
 
-    if (config[token.name] || [ 'variable' ].includes(token.type)) {
+    if (config[token.name] != null || [ 'variable' ].includes(token.type)) {
         if (token.type == null) token.type = 'option';
         if (isTemplated(token.value)) {
             let ctx = mapKeys(config, (v, k) => snakeCase(k));
@@ -230,30 +230,22 @@ function tokenize(token, cmdPath, config) {
 function kvJoin(key, value, type, delimiter, useValue) {
     return useValue === false
         ? Array.isArray(value)
-            ? value.map(v => result)
+            ? value.fill(key)
             : key
-        : type === 'option' || useValue === true
-            ? Array.isArray(value)
-                ? delimiter
-                    ? value.reduce((acc, v) => [
-                        ...acc,
-                        ...[ key, v ].join(delimiter)
-                      ], [])
-                    : value.reduce((acc, v) => [
-                        ...acc,
-                        key,
-                        v
-                      ], [])
-                : delimiter
-                    ? [ key, value ].join(delimiter)
-                    : [ key, value ]
-            : Array.isArray(value)
-                ? delimiter
-                    ? value.reduce(acc => [ ...acc, ...[ key, true ].join(delimiter) ], [])
-                    : value.fill(key)
-                : delimiter
-                    ? [ key, true ].join(delimiter)
-                    : key
+        : Array.isArray(value)
+            ? delimiter
+                ? value.reduce((acc, v) => [
+                    ...acc,
+                    ...[ key, v ].join(delimiter)
+                  ], [])
+                : value.reduce((acc, v) => [
+                    ...acc,
+                    key,
+                    v
+                  ], [])
+            : delimiter
+                ? [ key, value ].join(delimiter)
+                : [ key, value ];
 }
 
 function validateValue(choices, value, name, type) {
@@ -315,10 +307,10 @@ function parseArgv(tokens) {
                     : [ '--', value ];
                 break;
             case 'option':
-                result = kvJoin(`--${name}`, value, type, delimiter, useValue);
+                result = kvJoin(`--${name}`, value, type, delimiter, useValue == null ? true : false);
                 break;
             case 'flag':
-                result = kvJoin(`-${name}`, value, type, delimiter, useValue);
+                result = kvJoin(`-${name}`, value, type, delimiter, useValue == null ? false : true);
                 break;
             default:
                 throw new Error(`invalid argument type: ${type}`);
