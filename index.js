@@ -302,9 +302,12 @@ function parseArgv(tokens) {
                 result = value;
                 break;
             case '--':
-                result = Array.isArray(value)
-                    ? [ '--', ...value ]
-                    : [ '--', value ];
+                result = [
+                    '--',
+                    ...(Array.isArray(value)
+                        ? value
+                        : [ value ])
+                ];
                 break;
             case 'option':
                 result = kvJoin(`--${name}`, value, type, delimiter, useValue == null ? true : false);
