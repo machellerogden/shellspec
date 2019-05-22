@@ -157,6 +157,20 @@ const isTemplated = value =>
     (typeof value === 'string' && value.includes('${'))
     || (Array.isArray(value) && value.reduce((acc, v) => acc || v.includes('${'), false));
 
+
+function standardizeToken(token) {
+    if (token.type == null) token.type = 'option';
+    if ([ 'option', 'flag' ].includes(token.type)) {
+        if (token.type === 'option') token.prefix = '--';
+        if (token.type === 'flag') token.prefix = '-';
+        if (token.useValue == null) {
+            if (token.type == 'option') token.useValue = true;
+            if (token.type == 'flag') token.useValue = false;
+        }
+    }
+    return token;
+}
+
 function tokenize(token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
 
@@ -204,7 +218,7 @@ function tokenize(token, cmdPath, config) {
     if (config[token.name] == null && token.default) config[token.name] = token.default;
 
     if (config[token.name] != null || [ 'variable' ].includes(token.type)) {
-        if (token.type == null) token.type = 'option';
+        token = standardizeToken(token);
         if (isTemplated(token.value)) {
             let ctx = mapKeys(config, (v, k) => snakeCase(k));
             token.value = Array.isArray(token.value)
@@ -227,7 +241,8 @@ function tokenize(token, cmdPath, config) {
     return [];
 }
 
-function kvJoin(key, value, type, delimiter, useValue) {
+function kvJoin(prefix, key, value, type, delimiter, useValue) {
+    key = `${prefix}${key}`;
     return useValue === false
         ? Array.isArray(value)
             ? value.fill(key)
@@ -279,7 +294,8 @@ function parseArgv(tokens) {
             useValue,
             with:w,
             without:wo,
-            choices
+            choices,
+            prefix
         } = arg;
 
         if (delimiter) {
@@ -301,6 +317,10 @@ function parseArgv(tokens) {
             case 'values':
                 result = value;
                 break;
+            case 'option':
+            case 'flag':
+                result = kvJoin(prefix, name, value, type, delimiter, useValue);
+                break;
             case '--':
                 result = [
                     '--',
@@ -308,12 +328,6 @@ function parseArgv(tokens) {
                         ? value
                         : [ value ])
                 ];
-                break;
-            case 'option':
-                result = kvJoin(`--${name}`, value, type, delimiter, useValue == null ? true : false);
-                break;
-            case 'flag':
-                result = kvJoin(`-${name}`, value, type, delimiter, useValue == null ? false : true);
                 break;
             default:
                 throw new Error(`invalid argument type: ${type}`);
