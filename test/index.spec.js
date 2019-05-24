@@ -736,7 +736,7 @@ test('arg can specify valid values as "choices"', t => {
     t.throws(() => getArgv({ bar: 'd' }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
 });
 
-test('double dash args are possible', t => {
+test('double dash args', t => {
 
     const { getArgv } = ShellSpec(git);
 
@@ -751,4 +751,25 @@ test('double dash args are possible', t => {
     const output = [ 'git', 'add', '--', './src', './dist' ];
 
     t.deepEqual(argv, output);
+});
+
+test('useValue only for given type', t => {
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    type: 'option',
+                    useValue: 'string'
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    t.deepEqual(getArgv({ bar: true }), [ 'foo', '--bar' ]);
+    t.deepEqual(getArgv({ bar: 'baz' }), [ 'foo', '--bar', 'baz' ]);
 });

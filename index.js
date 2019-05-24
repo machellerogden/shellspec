@@ -226,9 +226,7 @@ function tokenize(token, cmdPath, config) {
                     : evaluate(`\`${token.value}\``, ctx);
         } else {
             token.value = config[token.name] != null
-                ? Array.isArray(config[token.name])
-                    ? config[token.name].map(String)
-                    : String(config[token.name])
+                ? config[token.name]
                 : null;
         }
         if (token.type === 'variable') {
@@ -243,6 +241,8 @@ function tokenize(token, cmdPath, config) {
 
 function kvJoin(prefix, key, value, type, delimiter, useValue) {
     key = `${prefix}${key}`;
+    if (typeof useValue === 'string') useValue = typeof value === useValue;
+    if (Array.isArray(useValue)) useValue = useValue.reduce((a, uv) => a || typeof value === uv, false);
     return useValue === false
         ? Array.isArray(value)
             ? value.fill(key)
@@ -335,7 +335,7 @@ function parseArgv(tokens) {
         return (result != null)
             ? [
                 ...argv,
-                ...(Array.isArray(result) ? result : [ result ])
+                ...(Array.isArray(result) ? result.map(String) : [ String(result) ])
               ]
             : argv;
     }, []);
