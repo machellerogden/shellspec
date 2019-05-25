@@ -198,6 +198,7 @@ function tokenize(token, cmdPath, config) {
             ? []
             : nextTokens.slice(nextCmdIdx);
 
+        // TODO: can't do during at tokenize step ... because we do context validate later and need to maintain the proper names
         if (nextConcatFlags === 'adjacent') ownTokens = concatAdjacentFlags(ownTokens);
         if (nextConcatFlags === true || Array.isArray(nextConcatFlags)) ownTokens = concatGivenFlags(ownTokens, nextConcatFlags);
 
@@ -271,16 +272,20 @@ function validateValue(choices, value, name, type) {
     }
 }
 
-function validateContext(testSet, tokens, type, name, toggle) {
+function findInSet(testSet, tokens, type, name) {
     testSet = Array.isArray(testSet)
         ? testSet
         : [ testSet ];
-    const result = tokens.find(v => testSet.includes(v.name));
-    if (toggle && !result) {
-        throw new Error(`the ${type} \`${name}\` must be accompanied by \`${testSet.join('\`, `')}\``);
-    } else if (!toggle && result) {
-        throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
-    }
+    return tokens.find(v => testSet.includes(v.name));
+}
+
+function findAllInSet(testSet, tokens, type, name) {
+    testSet = Array.isArray(testSet)
+        ? testSet
+        : [ testSet ];
+    let i = 0;
+    const names = new Set(tokens.map(({ name }) => name));
+    return testSet.reduce((a, v) => a && names.has(v), true);
 }
 
 function parseArgv(tokens) {
@@ -288,12 +293,11 @@ function parseArgv(tokens) {
 
         let {
             name,
+            key,
             type = 'option',
             value,
             join:delimiter = false,
             useValue,
-            with:w,
-            without:wo,
             choices,
             prefix
         } = arg;
@@ -306,9 +310,29 @@ function parseArgv(tokens) {
 
         if (Array.isArray(choices)) validateValue(choices, value, name, type);
 
-        if (w) validateContext(w, tokens, type, name, true);
+        if (arg.with) {
+            const result = findInSet(arg.with, tokens, type, name);
+            if (result == null) throw new Error(`the ${type} \`${name}\` must be accompanied by \`${Array.isArray(arg.with) ? arg.with.join('\`, `') : arg.with}\``);
+        }
 
-        if (wo) validateContext(wo, tokens, type, name);
+        if (arg.withAll) {
+            if (!findAllInSet(arg.withAll, tokens, type, name)) throw new Error(`the ${type} \`${name}\` must be accompanied by all of the following: \`${Array.isArray(arg.withAll) ? arg.withAll.join('\`, `') : arg.withAll}\``);
+        }
+
+        if (arg.without) {
+            const result = findInSet(arg.without, tokens, type, name);
+            if (result != null) throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
+        }
+
+        if (arg.when) {
+            const result = findInSet(arg.when, tokens, type, name);
+            if (result == null) return argv;
+        }
+
+        if (arg.unless) {
+            const result = findInSet(arg.unless, tokens, type, name);
+            if (result != null) return argv;
+        }
 
         let result;
 
@@ -319,7 +343,7 @@ function parseArgv(tokens) {
                 break;
             case 'option':
             case 'flag':
-                result = kvJoin(prefix, name, value, type, delimiter, useValue);
+                result = kvJoin(prefix, key || name, value, type, delimiter, useValue);
                 break;
             case '--':
                 result = [

@@ -253,6 +253,96 @@ test('with 3', t => {
     t.throws(() => getArgv(config), 'the option `formal` must be accompanied by `last-name`');
 });
 
+test('with all', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'a',
+                    type: 'flag',
+                    withAll: [ 'b', 'c', 'd' ]
+                },
+                {
+                    name: 'b',
+                    type: 'flag'
+                },
+                {
+                    name: 'c',
+                    type: 'flag'
+                },
+                {
+                    name: 'd',
+                    type: 'flag'
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    t.deepEqual(getArgv({
+        a: true,
+        b: true,
+        c: true,
+        d: true
+    }), [ 'foo', '-a', '-b', '-c', '-d' ]);
+
+    t.throws(() => getArgv({
+        a: true,
+        b: true,
+        d: true
+    }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
+});
+
+// TODO: concatFlags break the context validation....
+test.skip('with all 2', t => {
+
+    const spec = {
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            concatFlags: true,
+            args: [
+                {
+                    name: 'a',
+                    type: 'flag',
+                    withAll: [ 'b', 'c', 'd' ]
+                },
+                {
+                    name: 'b',
+                    type: 'flag'
+                },
+                {
+                    name: 'c',
+                    type: 'flag'
+                },
+                {
+                    name: 'd',
+                    type: 'flag'
+                }
+            ]
+        }
+    };
+
+    const { getArgv } = ShellSpec(spec);
+
+    t.deepEqual(getArgv({
+        a: true,
+        b: true,
+        c: true,
+        d: true
+    }), [ 'foo', '-abcd' ]);
+
+    t.throws(() => getArgv({
+        a: true,
+        b: true,
+        d: true
+    }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
+});
+
 test('without 1', t => {
 
     const spec = {
@@ -772,4 +862,43 @@ test('useValue only for given type', t => {
 
     t.deepEqual(getArgv({ bar: true }), [ 'foo', '--bar' ]);
     t.deepEqual(getArgv({ bar: 'baz' }), [ 'foo', '--bar', 'baz' ]);
+});
+
+test('conditional printing', t => {
+
+    const { getArgv } = ShellSpec(git);
+
+    t.deepEqual(getArgv({
+        branch: {
+            D: true,
+            r: true,
+            branchname: 'foo'
+        }
+    }, 'branch'), [ 'git', 'branch', '-D', '-r', 'foo' ]);
+
+    t.deepEqual(getArgv({
+        branch: {
+            list: true,
+            r: true,
+            branchname: 'foo'
+        }
+    }, 'branch'), [ 'git', 'branch', '-r', '--list', 'foo' ]);
+});
+
+test('key can be different from name', t => {
+
+    const { getArgv } = ShellSpec({
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    key: 'baz'
+                }
+            ]
+        }
+    });
+
+    t.deepEqual(getArgv({ bar: true }), [ 'foo', '--baz', 'true' ]);
 });
