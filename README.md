@@ -143,10 +143,9 @@ interface Arg {
 
     /**
      * Valid only for Args of type `flag`. Indicates whether the flag is able to
-     * be concatonated with other flags. If array of strings, values indicate
-     * which flags are valid to concatonated this flag with.
+     * be concatonated with other flags.
      */
-    concatable?: string[] | boolean;
+    concatable?: boolean;
 
     /**
      * Message text to display to user when prompting for Arg value.
