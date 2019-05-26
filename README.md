@@ -38,19 +38,6 @@ interface Command {
     };
 
     /**
-     * When array of strings, Args of `type` = 'flag' with `name` = string will
-     * be concatonated.
-     *
-     * When boolean, all args for given command will be concatonated.
-     *
-     * Concatonation Example: `-abc`
-     *
-     * Note: `useValue` is prohibited on flags when Command indicated that the
-     * given flag should be concatonated.
-     */
-    concatFlags?: string[] | boolean;
-
-    /**
      * Collection of argument definitions.
      */
     args: Args;
@@ -70,6 +57,11 @@ interface Arg {
      * Name of argument.
      */
     name: string;
+
+    /**
+     * String to print, if different from name.
+     */
+    key?: string;
 
     /**
      * When `type` is not provided, implementation is expected to default to
@@ -94,15 +86,43 @@ interface Arg {
 
     /**
      * `name`(s) of other argument(s) which must exist for this
-     * argument to be valid.
+     * argument to be valid. If any of the arguments defined
+     * exist, then Arg will be considered valid.
      */
     with?: string[] | string;
+
+    /**
+     * `name`(s) of other argument(s) which must exist for this
+     * argument to be valid. If any of the arguments defined
+     * are missing, Arg will be considered invalid.
+     */
+    withAll?: string[] | string;
 
     /**
      * `name`(s) of other argument(s) which must not exist for this
      * argument to be valid.
      */
     without?: string[] | string;
+
+    /**
+     * `name`(s) of other argument(s) which must exist for this
+     * argument to be emitted. If any of the other arguments
+     * defined exist, Arg will be emitted.
+     */
+    when?: string[] | string;
+
+    /**
+     * `name`(s) of other argument(s) which must exist for this
+     * argument to be emitted. If any of the other arguments
+     * defined are missing, Arg will not be emmited.
+     */
+    whenAll?: string[] | string;
+
+    /**
+     * `name`(s) of other argument(s) which must not exist for this
+     * argument to be emitted.
+     */
+    unless?: string[] | string;
 
     /**
      * Indicate when or not argument is required.
@@ -122,7 +142,14 @@ interface Arg {
     join?: string | boolean;
 
     /**
-     * Message text to display to user if prompting is needed.
+     * Valid only for Args of type `flag`. Indicates whether the flag is able to
+     * be concatonated with other flags. If array of strings, values indicate
+     * which flags are valid to concatonated this flag with.
+     */
+    concatable?: string[] | boolean;
+
+    /**
+     * Message text to display to user when prompting for Arg value.
      */
     message?: string;
 
