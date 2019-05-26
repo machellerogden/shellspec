@@ -297,30 +297,32 @@ test('with all', t => {
     }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
 });
 
-// TODO: concatFlags break the context validation....
-test.skip('with all 2', t => {
+test('with all 2', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: true,
             args: [
                 {
                     name: 'a',
                     type: 'flag',
+                    concatable: true,
                     withAll: [ 'b', 'c', 'd' ]
                 },
                 {
                     name: 'b',
+                    concatable: true,
                     type: 'flag'
                 },
                 {
                     name: 'c',
+                    concatable: true,
                     type: 'flag'
                 },
                 {
                     name: 'd',
+                    concatable: true,
                     type: 'flag'
                 }
             ]
@@ -454,26 +456,27 @@ test('without 3', t => {
     t.throws(() => getArgv(config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
-// TODO - tricky bidness...
-test('concatFlags', t => {
+test('concat flags', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: true,
             args: [
                 {
                     name: 'a',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 },
                 {
                     name: 'b',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 },
                 {
                     name: 'c',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 }
             ]
         }
@@ -494,18 +497,17 @@ test('concatFlags', t => {
     t.deepEqual(argv, output);
 });
 
-// TODO
-test('concatFlags should only concat adjacent flags so as not to mess with arg order', t => {
+test('concat flags should only concat adjacent flags so as not to mess with arg order', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: 'adjacent',
             args: [
                 {
                     name: 'a',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 },
                 {
                     name: 'b',
@@ -513,7 +515,8 @@ test('concatFlags should only concat adjacent flags so as not to mess with arg o
                 },
                 {
                     name: 'c',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 }
             ]
         }
@@ -534,17 +537,17 @@ test('concatFlags should only concat adjacent flags so as not to mess with arg o
     t.deepEqual(argv, output);
 });
 
-test('concatFlags 3', t => {
+test('concat flags more tests', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: [ 'a', 'c' ],
             args: [
                 {
                     name: 'a',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 },
                 {
                     name: 'b',
@@ -552,7 +555,8 @@ test('concatFlags 3', t => {
                 },
                 {
                     name: 'c',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 }
             ]
         }
@@ -568,31 +572,33 @@ test('concatFlags 3', t => {
 
     const argv = getArgv(config);
 
-    const output = [ 'foo', '-ac', '-b' ];
+    const output = [ 'foo', '-a', '-b', '-c' ];
 
     t.deepEqual(argv, output);
 });
 
-test('concatFlags cannot be used with useValue', t => {
+test('concat flags does the right thing when useValue === true', t => {
 
     const spec = {
         kind: 'shell',
         spec: {
             command: 'foo',
-            concatFlags: [ 'a', 'c' ],
             args: [
                 {
                     name: 'a',
-                    type: 'flag'
+                    type: 'flag',
+                    concatable: true
                 },
                 {
                     name: 'b',
-                    type: 'flag'
+                    type: 'flag',
+                    useValue: true,
+                    concatable: true
                 },
                 {
                     name: 'c',
                     type: 'flag',
-                    useValue: true
+                    concatable: true
                 }
             ]
         }
@@ -606,111 +612,9 @@ test('concatFlags cannot be used with useValue', t => {
         c: true
     };
 
-    t.throws(() => getArgv(config, 'foo'), 'Invalid use of `useValue` on concatted flag `c`');
-});
+    const argv = getArgv(config);
 
-test('concatFlags works at any level', t => {
-
-    const spec = {
-        kind: 'shell',
-        spec: {
-            command: 'foo',
-            args: [
-                {
-                    name: 'a',
-                    type: 'flag'
-                },
-                {
-                    name: 'b',
-                    type: 'flag'
-                },
-                {
-                    name: 'c',
-                    type: 'flag'
-                },
-                {
-                    command: 'bar',
-                    concatFlags: true,
-                    args: [
-                        {
-                            name: 'd',
-                            type: 'flag'
-                        },
-                        {
-                            name: 'e',
-                            type: 'flag'
-                        },
-                        {
-                            name: 'f',
-                            type: 'flag'
-                        },
-                        {
-                            command: 'baz',
-                            args: [
-                                {
-                                    name: 'g',
-                                    type: 'flag'
-                                },
-                                {
-                                    name: 'h',
-                                    type: 'flag'
-                                },
-                                {
-                                    name: 'i',
-                                    type: 'flag'
-                                },
-                                {
-                                    command: 'qux',
-                                    concatFlags: [ 'j', 'l' ],
-                                    args: [
-                                        {
-                                            name: 'j',
-                                            type: 'flag'
-                                        },
-                                        {
-                                            name: 'k',
-                                            type: 'flag'
-                                        },
-                                        {
-                                            name: 'l',
-                                            type: 'flag'
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    };
-
-    const { getArgv } = ShellSpec(spec);
-
-    const config = {
-        a: true,
-        b: true,
-        c: true,
-        bar: {
-            d: true,
-            e: true,
-            f: true,
-            baz: {
-                g: true,
-                h: true,
-                i: true,
-                qux: {
-                    j: true,
-                    k: true,
-                    l: true
-                }
-            }
-        }
-    };
-
-    const argv = getArgv(config, 'bar.baz.qux');
-
-    const output = [ 'foo', '-a', '-b', '-c', 'bar', '-def', 'baz', '-g', '-h', '-i', 'qux', '-jl', '-k' ];
+    const output = [ 'foo', '-ab', 'true', '-c' ];
 
     t.deepEqual(argv, output);
 });

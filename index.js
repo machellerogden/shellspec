@@ -9,6 +9,7 @@ const inquirer = require('inquirer');
 const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
+const { clone } = require('mediary');
 
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
@@ -28,14 +29,15 @@ function ShellSpec(definition) {
 
     function getPrompts(config = {}, cmd = '') {
         cmd = getCmdPath(main, cmd);
-        return prompts(cmd, spec, { [main]: config }, cmd.join('.'));
+        return prompts(cmd, clone(spec), { [main]: config }, cmd.join('.'));
     }
 
     function getArgv(config = {}, cmd = '') {
         cmd = getCmdPath(main, cmd);
-        const rawTokens = tokenize(spec, cmd, { [main]: config });
-        const tokens = validate(rawTokens);
-        const argv = parse(tokens);
+        const rawTokens = tokenize(clone(spec), cmd, { [main]: config });
+        const validTokens = validate(rawTokens);
+        const concattedTokens = concat(validTokens);
+        const argv = emit(concattedTokens);
         return argv;
     }
 
@@ -65,6 +67,24 @@ function ShellSpec(definition) {
     };
 }
 
+function concat(tokens) {
+    return tokens.reduce((argv, arg, i) => {
+        if (argv.length > 0) {
+            const prev = argv[argv.length - 1];
+            if (arg.concatable && arg.type === 'flag' && !prev.useValue && prev.concatable) {
+                prev.name = Array.isArray(prev.name)
+                    ? [ ...prev.name, arg.name ]
+                    : [ prev.name, arg.name ];
+                prev.key += arg.key;
+                prev.value = arg.value;
+                prev.useValue = arg.useValue;
+                return argv;
+            }
+        }
+        return [ ...argv, arg ];
+    }, []);
+}
+
 function tokenize(token, cmdPath, config) {
     if (token == null) throw new Error('invalid arguments');
 
@@ -79,7 +99,7 @@ function tokenize(token, cmdPath, config) {
         const nextToken = token.args || [];
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[token.command] || {};
-        const nextTokens = tokenize(nextToken, nextCmdPath, nextConfig)
+        const nextTokens = tokenize(nextToken, nextCmdPath, nextConfig);
 
         return [
             {
@@ -93,6 +113,10 @@ function tokenize(token, cmdPath, config) {
     }
 
     if (typeof token === 'string') token = { name: token };
+
+    token.key = token.key == null
+        ? token.name
+        : token.key;
 
     if (config[token.name] == null && token.default) config[token.name] = token.default;
 
@@ -123,7 +147,9 @@ function validate(tokens) {
     return tokens.reduce((argv, arg) => {
         let {
             name,
-            type = 'option'
+            type = 'option',
+            choices,
+            value
         } = arg;
 
         if (arg.with) {
@@ -156,21 +182,21 @@ function validate(tokens) {
             if (result != null) return argv;
         }
 
+        if (Array.isArray(choices)) validateValue(choices, value, name, type);
+
         return [ ...argv, arg ];
     }, []);
 }
 
-function parse(tokens) {
+function emit(tokens) {
     return tokens.reduce((argv, arg) => {
 
         let {
-            name,
             key,
             type = 'option',
             value,
             join:delimiter = false,
             useValue,
-            choices,
             prefix
         } = arg;
 
@@ -179,8 +205,6 @@ function parse(tokens) {
                 ? delimiter
                 : '=';
         }
-
-        if (Array.isArray(choices)) validateValue(choices, value, name, type);
 
         let result;
 
@@ -191,7 +215,7 @@ function parse(tokens) {
                 break;
             case 'option':
             case 'flag':
-                result = kvJoin(prefix, key || name, value, type, delimiter, useValue);
+                result = kvJoin(prefix, key, value, type, delimiter, useValue);
                 break;
             case '--':
                 result = [
@@ -342,7 +366,8 @@ function findAllInSet(testSet, tokens, type, name) {
         : [ testSet ];
     let i = 0;
     const names = new Set(tokens.map(({ name }) => name));
-    return testSet.reduce((a, v) => a && names.has(v), true);
+    const result = testSet.reduce((a, v) => a && names.has(v), true)
+    return result;
 }
 
 function validateValue(choices, value, name, type) {
