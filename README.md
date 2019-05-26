@@ -125,7 +125,8 @@ interface Arg {
     unless?: string[] | string;
 
     /**
-     * Indicate when or not argument is required.
+     * Indicate when argument always required. Use `with` or `without` instead
+     * if contextual conditions apply.
      */
     required?: boolean;
 
