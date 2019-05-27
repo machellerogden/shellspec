@@ -17,7 +17,12 @@ TypeScript is used below to describe the specification. TypeScript is prefered o
  */
 interface Definition {
     kind: 'shell';
-    spec: Command;
+    spec: Versions | Command;
+}
+
+interface Versions {
+    default: string
+    [key: string]?: Command
 }
 
 interface Command {
