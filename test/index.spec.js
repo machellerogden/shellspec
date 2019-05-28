@@ -806,3 +806,24 @@ test('key can be different from name', t => {
 
     t.deepEqual(getArgv({ bar: true }), [ 'foo', '--baz', 'true' ]);
 });
+
+test('dynamic useValue does the right thing when join is specified', t => {
+
+    const { getArgv } = ShellSpec({
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    useValue: 'string',
+                    join: '='
+                }
+            ]
+        }
+    });
+
+    t.deepEqual(getArgv({ bar: true }), [ 'foo', '--bar' ]);
+    t.deepEqual(getArgv({ bar: "baz" }), [ 'foo', '--bar=baz' ]);
+    t.deepEqual(getArgv({ bar: false }), [ 'foo', '--bar' ]);
+});

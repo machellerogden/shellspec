@@ -218,6 +218,326 @@
                 "useValue": true
             },
             {
+                "command": "config",
+                "args": [
+                    {
+                        "name": "e",
+                        "type": "flag",
+                        "without": "edit"
+                    },
+                    {
+                        "name": "edit",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "e"
+                    },
+                    {
+                        "name": "file-option",
+                        "type": "value"
+                    },
+                    {
+                        "name": "type",
+                        "type": "option",
+                        "join": "="
+                    },
+                    {
+                        "name": "no-type",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "show-origin",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "z",
+                        "type": "flag",
+                        "without": "null"
+                    },
+                    {
+                        "name": "null",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "z"
+                    },
+                    {
+                        "name": "l",
+                        "type": "flag",
+                        "without": "list"
+                    },
+                    {
+                        "name": "list",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "l"
+                    },
+                    {
+                        "name": "name-only",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "get-regexp",
+                        "type": "option",
+                        "useValue": false,
+                        "with": "name_regex"
+                    },
+                    {
+                        "name": "get-urlmatch",
+                        "type": "option",
+                        "with": [ "name", "url" ]
+                    },
+                    {
+                        "name": "add",
+                        "type": "option",
+                        "useValue": false,
+                        "with": [ "name", "value" ]
+                    },
+                    {
+                        "name": "replace-all",
+                        "type": "option",
+                        "useValue": false,
+                        "with": [ "name", "value" ]
+                    },
+                    {
+                        "name": "get",
+                        "type": "option",
+                        "useValue": false,
+                        "with": "name"
+                    },
+                    {
+                        "name": "get-all",
+                        "type": "option",
+                        "useValue": false,
+                        "with": "name"
+                    },
+                    {
+                        "name": "unset",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "unset-all",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "rename-section",
+                        "type": "option",
+                        "useValue": false,
+                        "with": [ "old_name", "new_name" ]
+                    },
+                    {
+                        "name": "remove-section",
+                        "type": "option",
+                        "useValue": false,
+                        "with": "name"
+                    },
+                    {
+                        "name": "get-color",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "get-colorbool"
+                    },
+                    {
+                        "name": "get-color",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "get-color"
+                    },
+                    {
+                        "name": "name",
+                        "type": "value"
+                    },
+                    {
+                        "name": "name_regex",
+                        "type": "value"
+                    },
+                    {
+                        "name": "value",
+                        "type": "value"
+                    },
+                    {
+                        "name": "value_regex",
+                        "type": "value"
+                    },
+                    {
+                        "name": "url",
+                        "type": "value"
+                    },
+                    {
+                        "name": "old_name",
+                        "type": "value"
+                    },
+                    {
+                        "name": "new_name",
+                        "type": "value"
+                    },
+                    {
+                        "name": "default",
+                        "type": "value"
+                    },
+                    {
+                        "name": "stdout-is-tty",
+                        "type": "value"
+                    }
+                ]
+            },
+            {
+                "command": "help",
+                "args": [
+                    {
+                        "name": "a",
+                        "type": "flag",
+                        "without": "all"
+                    },
+                    {
+                        "name": "all",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "a"
+                    },
+                    {
+                        "name": "verbose",
+                        "type": "option",
+                        "useValue": false,
+                        "with": "a"
+                    },
+                    {
+                        "name": "g",
+                        "type": "flag",
+                        "without": "guide"
+                    },
+                    {
+                        "name": "guide",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "g"
+                    },
+                    {
+                        "name": "i",
+                        "type": "flag",
+                        "without": [
+                            "info",
+                            "m",
+                            "man",
+                            "w",
+                            "web"
+                        ]
+                    },
+                    {
+                        "name": "info",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "i",
+                            "m",
+                            "man",
+                            "w",
+                            "web"
+                        ]
+                    },
+                    {
+                        "name": "m",
+                        "type": "flag",
+                        "without": [
+                            "info",
+                            "i",
+                            "man",
+                            "w",
+                            "web"
+                        ]
+                    },
+                    {
+                        "name": "man",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "info",
+                            "i",
+                            "m",
+                            "w",
+                            "web"
+                        ]
+                    },
+                    {
+                        "name": "w",
+                        "type": "flag",
+                        "without": [
+                            "info",
+                            "i",
+                            "m",
+                            "man",
+                            "web"
+                        ]
+                    },
+                    {
+                        "name": "web",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "info",
+                            "i",
+                            "m",
+                            "man",
+                            "w"
+                        ]
+                    },
+                    {
+                        "name": "command",
+                        "type": "value",
+                        "without": "guide"
+                    },
+                    {
+                        "name": "guide",
+                        "type": "value",
+                        "without": "command"
+                    }
+                ]
+            },
+            {
+                "command": "iniit",
+                "args": [
+                    {
+                        "name": "q",
+                        "type": "flag",
+                        "without": "quiet"
+                    },
+                    {
+                        "name": "quiet",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "q"
+                    },
+                    {
+                        "name": "bare",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "template",
+                        "type": "option",
+                        "join": "="
+                    },
+                    {
+                        "name": "separate-git-dir",
+                        "type": "option",
+                        "join": "="
+                    },
+                    {
+                        "name": "shared",
+                        "type": "option",
+                        "useValue": "string",
+                        "join": "="
+                    },
+                    {
+                        "name": "directory",
+                        "type": "value"
+                    }
+                ]
+            },
+            {
                 "command": "add",
                 "args": [
                     {

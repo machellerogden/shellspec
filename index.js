@@ -304,10 +304,17 @@ function standardizeToken(token) {
     return token;
 }
 
+const types = new Set([ 'string', 'number', 'boolean' ]);
 function kvJoin(prefix, key, value, type, delimiter, useValue) {
     key = `${prefix}${key}`;
-    if (typeof useValue === 'string') useValue = typeof value === useValue;
-    if (Array.isArray(useValue)) useValue = useValue.reduce((a, uv) => a || typeof value === uv, false);
+    if (typeof useValue === 'string') useValue = types.has(useValue)
+        ? typeof value === useValue
+        : value == useValue;
+    if (Array.isArray(useValue)) useValue = useValue.reduce((a, uv) =>
+        a ||
+        types.has(uv)
+            ? typeof value === uv
+            : value == uv, false);
     return useValue === false
         ? Array.isArray(value)
             ? value.fill(key)
