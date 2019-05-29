@@ -123,15 +123,16 @@ function tokenize(token, cmdPath, config) {
     if (config[token.name] != null || [ 'variable' ].includes(token.type)) {
         token = standardizeToken(token);
         if (isTemplated(token.value)) {
-            // TODO: no casing bullshit...
+            // TODO: get rid of casing bullshit... add ctx?
             let ctx = mapKeys(config, (v, k) => snakeCase(k));
             token.value = Array.isArray(token.value)
                     ? token.value.map(v => evaluate(`\`${v}\``, ctx))
                     : evaluate(`\`${token.value}\``, ctx);
         } else {
-            token.value = config[token.name] != null
-                ? config[token.name]
-                : null;
+            token.value = token.value
+                || (config[token.name] != null
+                    ? config[token.name]
+                    : null);
         }
         if (token.type === 'variable') {
             config[token.name] = token.value;
