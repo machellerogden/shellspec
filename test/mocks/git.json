@@ -2089,6 +2089,78 @@
                 ]
             },
             {
+                "command": "rm",
+                "args": [
+                    {
+                        "name": "force",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "dry-run",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "r",
+                        "type": "flag"
+                    },
+                    {
+                        "name": "cached",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "ignore-unmatch",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "file",
+                        "type": "--",
+                        "without": "files"
+                    },
+                    {
+                        "name": "files",
+                        "type": "--",
+                        "without": "file"
+                    }
+                ]
+            },
+            {
+                "command": "mv",
+                "args": [
+                    {
+                        "name": "verbose",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "force",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "k",
+                        "type": "flag"
+                    },
+                    {
+                        "name": "dry-run",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "source",
+                        "type": "value",
+                        "required": true
+                    },
+                    {
+                        "name": "destination",
+                        "type": "value",
+                        "required": true
+                    }
+                ]
+            },
+            {
                 "command": "branch",
                 "args": [
                     {
@@ -2288,16 +2360,112 @@
                 "command": "checkout",
                 "args": [
                     {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "force",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "ours",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "f",
+                            "force",
+                            "theirs",
+                            "m",
+                            "conflict"
+                        ]
+                    },
+                    {
+                        "name": "theirs",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "f",
+                            "force",
+                            "ours",
+                            "m",
+                            "conflict"
+                        ]
+                    },
+                    {
+                        "name": "m",
+                        "type": "flag",
+                        "without": [
+                            "f",
+                            "force",
+                            "ours",
+                            "theirs",
+                            "conflict"
+                        ]
+                    },
+                    {
+                        "name": "conflict",
+                        "type": "option",
+                        "useValue": true,
+                        "join": "=",
+                        "without": [
+                            "f",
+                            "force",
+                            "ours",
+                            "m",
+                            "theirs"
+                        ],
+                        "choices": [
+                            "merge",
+                            "diff3"
+                        ]
+                    },
+                    {
+                        "name": "merge",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "m"
+                    },
+                    {
+                        "name": "m",
+                        "type": "flag",
+                        "without": "merge"
+                    },
+                    {
+                        "name": "detach",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
                         "name": "b",
                         "type": "flag",
                         "useValue": true,
-                        "without": "B"
+                        "without": [
+                            "B",
+                            "orphan",
+                            "branch",
+                            "commit"
+                        ]
                     },
                     {
                         "name": "B",
                         "type": "flag",
                         "useValue": true,
-                        "without": "b"
+                        "without": [
+                            "b",
+                            "orphan",
+                            "branch",
+                            "commit"
+                        ]
+                    },
+                    {
+                        "name": "orphan",
+                        "type": "option",
+                        "without": [
+                            "b",
+                            "B",
+                            "branch",
+                            "commit"
+                        ]
                     },
                     {
                         "name": "track",
@@ -2310,8 +2478,97 @@
                         "without": "track"
                     },
                     {
+                        "name": "patch",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "p"
+                    },
+                    {
+                        "name": "p",
+                        "type": "flag",
+                        "without": "patch"
+                    },
+                    {
+                        "name": "ignore-other-worktrees",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "recurse-submodules",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "no-recurse-submodules"
+                    },
+                    {
+                        "name": "no-recurse-submodules",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "recurse-submodules"
+                    },
+                    {
+                        "name": "no-guess",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
                         "name": "start-point",
-                        "type": "value"
+                        "type": "value",
+                        "without": [
+                            "branch",
+                            "commit",
+                            "tree-ish"
+                        ]
+                    },
+                    {
+                        "name": "commit",
+                        "type": "value",
+                        "without": [
+                            "branch",
+                            "start-point",
+                            "tree-ish"
+                        ]
+                    },
+                    {
+                        "name": "branch",
+                        "type": "value",
+                        "without": [
+                            "commit",
+                            "start-point",
+                            "tree-ish"
+                        ]
+                    },
+                    {
+                        "name": "tree-ish",
+                        "type": "value",
+                        "without": [
+                            "branch",
+                            "commit",
+                            "start-point"
+                        ]
+                    },
+                    {
+                        "name": "path",
+                        "type": "--",
+                        "without": [
+                            "paths",
+                            "pathspec"
+                        ]
+                    },
+                    {
+                        "name": "paths",
+                        "type": "--",
+                        "without": [
+                            "path",
+                            "pathspec"
+                        ]
+                    },
+                    {
+                        "name": "pathspec",
+                        "type": "--",
+                        "without": [
+                            "path",
+                            "paths"
+                        ]
                     }
                 ]
             },
