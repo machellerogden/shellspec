@@ -20,7 +20,9 @@
                     "type": "option",
                     "useValue": false,
                     "without": [ "v", "vv" ]
-                },
+                }
+            ],
+            "abbrev": [
                 {
                     "name": "abbrev",
                     "type": "option",
@@ -34,7 +36,9 @@
                     "useValue": false,
                     "with": [ "v", "vv", "verbose" ],
                     "without": "abbrev"
-                },
+                }
+            ],
+            "quiet": [
                 {
                     "name": "q",
                     "type": "flag",
@@ -87,6 +91,32 @@
                     "without": "force"
                 }
             ],
+            "all": [
+                {
+                    "name": "all",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "a"
+                },
+                {
+                    "name": "a",
+                    "type": "flag",
+                    "without": "all"
+                }
+            ],
+            "patch": [
+                {
+                    "name": "patch",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "p"
+                },
+                {
+                    "name": "p",
+                    "type": "flag",
+                    "without": "patch"
+                }
+            ],
             "interactive": [
                 {
                     "name": "interactive",
@@ -120,7 +150,7 @@
                     "without": "color"
                 }
             ],
-            "diff": [
+            "diffcore": [
                 {
                     "name": "patch",
                     "type": "option",
@@ -426,6 +456,274 @@
                     "name": "check",
                     "type": "option",
                     "useValue": false
+                },
+                {
+                    "name": "ws-error-highlight",
+                    "type": "option",
+                    "join": "="
+                },
+                {
+                    "name": "full-index",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "binary",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "abbrev",
+                    "type": "option",
+                    "useValue": "number",
+                    "join": "="
+                },
+                {
+                    "name": "break-rewrites",
+                    "type": "option",
+                    "useValue": [ "string", "number" ],
+                    "join": "=",
+                    "without": "B"
+                },
+                {
+                    "name": "B",
+                    "type": "flag",
+                    "useValue": [ "string", "number" ],
+                    "join": "",
+                    "without": "break-rewrites"
+                },
+                {
+                    "name": "find-renames",
+                    "type": "option",
+                    "useValue": "number",
+                    "join": "=",
+                    "without": "M"
+                },
+                {
+                    "name": "M",
+                    "type": "flag",
+                    "useValue": "number",
+                    "join": "",
+                    "without": "find-renames"
+                },
+                {
+                    "name": "find-copies",
+                    "type": "option",
+                    "useValue": "number",
+                    "join": "=",
+                    "without": "C"
+                },
+                {
+                    "name": "C",
+                    "type": "flag",
+                    "useValue": "number",
+                    "join": "",
+                    "without": "find-copies"
+                },
+                {
+                    "name": "find-copies-harder",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "irreversible-delete",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "D"
+                },
+                {
+                    "name": "D",
+                    "type": "flag",
+                    "without": "irreversible-delete"
+                },
+                {
+                    "name": "l",
+                    "type": "flag",
+                    "useValue": true,
+                    "join": ""
+                },
+                {
+                    "name": "diff-filter",
+                    "type": "option",
+                    "join": "="
+                },
+                {
+                    "name": "S",
+                    "type": "flag",
+                    "useValue": true,
+                    "join": ""
+                },
+                {
+                    "name": "G",
+                    "type": "flag",
+                    "useValue": true,
+                    "join": ""
+                },
+                {
+                    "name": "find-object",
+                    "type": "option",
+                    "join": "="
+                },
+                {
+                    "name": "pickaxe-all",
+                    "type": "option",
+                    "useValue": false,
+                    "with": [ "S", "G" ]
+                },
+                {
+                    "name": "pickaxe-regex",
+                    "type": "option",
+                    "useValue": false,
+                    "with": "S"
+                },
+                {
+                    "name": "O",
+                    "type": "flag",
+                    "useValue": true,
+                    "join": "="
+                },
+                {
+                    "name": "R",
+                    "type": "flag"
+                },
+                {
+                    "name": "relative",
+                    "type": "option",
+                    "useValue": "string",
+                    "join": "="
+                },
+                {
+                    "name": "text",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "a"
+                },
+                {
+                    "name": "a",
+                    "type": "flag",
+                    "without": "text"
+                },
+                {
+                    "name": "ignore-cr-at-eol",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "ignore-space-at-eol",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "ignore-space-change",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "b"
+                },
+                {
+                    "name": "b",
+                    "type": "flag",
+                    "without": "ignore-space-change"
+                },
+                {
+                    "name": "ignore-all-space",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "w"
+                },
+                {
+                    "name": "w",
+                    "type": "flag",
+                    "without": "ignore-all-space"
+                },
+                {
+                    "name": "ignore-blank-lines",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "inter-hunk-context",
+                    "type": "option",
+                    "join": "="
+                },
+                {
+                    "name": "function-context",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "W"
+                },
+                {
+                    "name": "W",
+                    "type": "flag",
+                    "without": "function-context"
+                },
+                {
+                    "name": "exit-code",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "quiet",
+                    "type": "option",
+                    "useValue": false
+                },
+                {
+                    "name": "ext-diff",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "no-ext-diff"
+                },
+                {
+                    "name": "no-ext-diff",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "ext-diff"
+                },
+                {
+                    "name": "text-conv",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "no-text-conv"
+                },
+                {
+                    "name": "no-text-conv",
+                    "type": "option",
+                    "useValue": false,
+                    "without": "text-conv"
+                },
+                {
+                    "name": "ignore-submodules",
+                    "type": "option",
+                    "useValue": "string",
+                    "join": "=",
+                    "choices": [
+                        "none",
+                        "untracked",
+                        "dirty",
+                        "all"
+                    ]
+                },
+                {
+                    "name": "src-prefix",
+                    "type": "option",
+                    "join": "=",
+                    "without": "no-prefix"
+                },
+                {
+                    "name": "dst-prefix",
+                    "type": "option",
+                    "join": "=",
+                    "without": "no-prefix"
+                },
+                {
+                    "name": "no-prefix",
+                    "type": "option",
+                    "useValue": false,
+                    "without": [ "src-prefix", "dst-prefix" ]
+                },
+                {
+                    "name": "line-prefix",
+                    "type": "option",
+                    "join": "="
                 }
             ]
         },
@@ -886,6 +1184,10 @@
                         "type": "collection"
                     },
                     {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
                         "name": "progress",
                         "type": "option",
                         "useValue": false
@@ -1021,6 +1323,10 @@
                 "args": [
                     {
                         "name": "verbose",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "quiet",
                         "type": "collection"
                     },
                     {
@@ -1197,6 +1503,10 @@
                         "type": "collection"
                     },
                     {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
                         "name": "u",
                         "type": "flag",
                         "useValue": "string",
@@ -1300,8 +1610,81 @@
                 "command": "diff",
                 "args": [
                     {
-                        "name": "diff",
+                        "name": "diffcore",
                         "type": "collection"
+                    },
+                    {
+                        "name": "1",
+                        "type": "flag",
+                        "without": [
+                            "2",
+                            "3",
+                            "base",
+                            "ours",
+                            "theirs"
+                        ]
+                    },
+                    {
+                        "name": "2",
+                        "type": "flag",
+                        "without": [
+                            "1",
+                            "3",
+                            "base",
+                            "ours",
+                            "theirs"
+                        ]
+                    },
+                    {
+                        "name": "3",
+                        "type": "flag",
+                        "without": [
+                            "1",
+                            "2",
+                            "base",
+                            "ours",
+                            "theirs"
+                        ]
+                    },
+                    {
+                        "name": "base",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "1",
+                            "2",
+                            "3",
+                            "ours",
+                            "theirs"
+                        ]
+                    },
+                    {
+                        "name": "ours",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "1",
+                            "2",
+                            "3",
+                            "base",
+                            "theirs"
+                        ]
+                    },
+                    {
+                        "name": "theirs",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "1",
+                            "2",
+                            "3",
+                            "base",
+                            "ours"
+                        ]
+                    },
+                    {
+                        "name": "0",
+                        "type": "flag"
                     },
                     {
                         "name": "cached",
@@ -1345,6 +1728,367 @@
                 ]
             },
             {
+                "command": "commit",
+                "args": [
+                    {
+                        "name": "all",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "interactive",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "patch",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "template",
+                        "type": "option",
+                        "join": "=",
+                        "without": "t"
+                    },
+                    {
+                        "name": "t",
+                        "type": "flag",
+                        "useValue": true,
+                        "without": "template"
+                    },
+                    {
+                        "name": "signoff",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "s"
+                    },
+                    {
+                        "name": "s",
+                        "type": "flag",
+                        "without": "signoff"
+                    },
+                    {
+                        "name": "verbose",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "untracked-files",
+                        "type": "option",
+                        "useValue": "string",
+                        "join": "=",
+                        "choices": [
+                            "no",
+                            "normal",
+                            "all"
+                        ],
+                        "without": "u"
+                    },
+                    {
+                        "name": "u",
+                        "type": "flag",
+                        "useValue": "string",
+                        "join": "",
+                        "choices": [
+                            "no",
+                            "normal",
+                            "all"
+                        ],
+                        "without": "untracked-files"
+                    },
+                    {
+                        "name": "amend",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "dry-run",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "c",
+                        "type": "flag",
+                        "useValue": true,
+                        "without": [
+                            "C",
+                            "fixup",
+                            "squash"
+                        ]
+                    },
+                    {
+                        "name": "C",
+                        "type": "flag",
+                        "useValue": true,
+                        "without": [
+                            "c",
+                            "fixup",
+                            "squash"
+                        ]
+                    },
+                    {
+                        "name": "fixup",
+                        "type": "option",
+                        "without": [
+                            "c",
+                            "C",
+                            "squash"
+                        ]
+                    },
+                    {
+                        "name": "squash",
+                        "type": "option",
+                        "without": [
+                            "c",
+                            "C",
+                            "fixup"
+                        ]
+                    },
+                    {
+                        "name": "file",
+                        "type": "option",
+                        "join": "=",
+                        "without": [ "F", "m", "message" ]
+                    },
+                    {
+                        "name": "F",
+                        "type": "flag",
+                        "useValue": true,
+                        "without": [ "file", "m", "message" ]
+                    },
+                    {
+                        "name": "message",
+                        "type": "option",
+                        "join": "=",
+                        "without": [ "F", "f", "message" ]
+                    },
+                    {
+                        "name": "m",
+                        "type": "flag",
+                        "useValue": true,
+                        "without": [ "F", "file", "message" ]
+                    },
+                    {
+                        "name": "reset-author",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "allow-empty",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "allow-empty-message",
+                        "type": "option",
+                        "useValue": false
+                    },
+                    {
+                        "name": "no-verify",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "n"
+                    },
+                    {
+                        "name": "n",
+                        "type": "flag",
+                        "without": "no-verify"
+                    },
+                    {
+                        "name": "edit",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "e"
+                    },
+                    {
+                        "name": "e",
+                        "type": "flag",
+                        "without": "edit"
+                    },
+                    {
+                        "name": "author",
+                        "type": "option",
+                        "join": "="
+                    },
+                    {
+                        "name": "date",
+                        "type": "option",
+                        "join": "="
+                    },
+                    {
+                        "name": "cleanup",
+                        "type": "option",
+                        "join": "=",
+                        "choices": [
+                            "strip",
+                            "whitespace",
+                            "verbatim",
+                            "scissors",
+                            "default"
+                        ]
+                    },
+                    {
+                        "name": "status",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "no-status"
+                    },
+                    {
+                        "name": "no-status",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "status"
+                    },
+                    {
+                        "name": "input",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "i"
+                    },
+                    {
+                        "name": "i",
+                        "type": "flag",
+                        "without": "input"
+                    },
+                    {
+                        "name": "only",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "o"
+                    },
+                    {
+                        "name": "o",
+                        "type": "flag",
+                        "without": "only"
+                    },
+                    {
+                        "name": "gpg-sign",
+                        "type": "option",
+                        "useValue": "string",
+                        "join": "=",
+                        "without": [ "no-gpg-sign", "S" ]
+                    },
+                    {
+                        "name": "no-gpg-sign",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [ "gpg-sign", "S" ]
+                    },
+                    {
+                        "name": "S",
+                        "type": "flag",
+                        "useValue": "string",
+                        "join": "",
+                        "without": [ "no-gpg-sign", "gpg-sign" ]
+                    },
+                    {
+                        "name": "file",
+                        "type": "--",
+                        "without": "files"
+                    },
+                    {
+                        "name": "files",
+                        "type": "--",
+                        "without": "file"
+                    }
+                ]
+            },
+            {
+                "command": "reset",
+                "args": [
+                    {
+                        "name": "patch",
+                        "type": "option",
+                        "useValue": false,
+                        "without": "p"
+                    },
+                    {
+                        "name": "p",
+                        "type": "flag",
+                        "without": "patch"
+                    },
+                    {
+                        "name": "soft",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "mixed",
+                            "hard",
+                            "merge",
+                            "keep"
+                        ]
+                    },
+                    {
+                        "name": "mixed",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "soft",
+                            "hard",
+                            "merge",
+                            "keep"
+                        ]
+                    },
+                    {
+                        "name": "N",
+                        "type": "flag",
+                        "with": "mixed"
+                    },
+                    {
+                        "name": "hard",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "soft",
+                            "mixed",
+                            "merge",
+                            "keep"
+                        ]
+                    },
+                    {
+                        "name": "merge",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "soft",
+                            "mixed",
+                            "hard",
+                            "keep"
+                        ]
+                    },
+                    {
+                        "name": "keep",
+                        "type": "option",
+                        "useValue": false,
+                        "without": [
+                            "soft",
+                            "mixed",
+                            "hard",
+                            "merge"
+                        ]
+                    },
+                    {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "tree-ish",
+                        "type": "value",
+                        "without": "commit"
+                    },
+                    {
+                        "name": "commit",
+                        "type": "value",
+                        "without": "tree-ish"
+                    },
+                    {
+                        "name": "paths",
+                        "type": "--"
+                    }
+                ]
+            },
+            {
                 "command": "branch",
                 "args": [
                     {
@@ -1381,6 +2125,14 @@
                     },
                     {
                         "name": "verbose",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "quiet",
+                        "type": "collection"
+                    },
+                    {
+                        "name": "abbrev",
                         "type": "collection"
                     },
                     {
