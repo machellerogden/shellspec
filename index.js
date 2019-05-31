@@ -122,16 +122,7 @@ function tokenize(token, cmdPath, config) {
 
     if (typeof token === 'string') token = { name: token };
 
-    const missingRequiredConfig =
-        token.required
-        && !(config[token.name] != null
-            || (token.aka
-                ? Array.isArray(token.aka)
-                    ? token.aka.some(n => config[n] != null)
-                    : config[token.aka] != null
-                : false));
-
-    if (missingRequiredConfig) throw new Error(`missing required config for \`${token.name}\``);
+    if (isMissingRequiredConfig(token, config)) throw new Error(`missing required config for \`${token.name}\``);
 
     token.key = token.key == null
         ? token.name
@@ -257,6 +248,16 @@ function emit(tokens) {
     }, []);
 }
 
+function isMissingRequiredConfig(token, config) {
+    return token.required
+        && !(config[token.name] != null
+            || (token.aka
+                ? Array.isArray(token.aka)
+                    ? token.aka.some(n => config[n] != null)
+                    : config[token.aka] != null
+                : false));
+}
+
 function prompts(cmdPath, args, config, cmdKey) {
     if (args == null) throw new Error('invalid arguments');
 
@@ -278,22 +279,14 @@ function prompts(cmdPath, args, config, cmdKey) {
 
     if (typeof args === 'string') args = { name: args };
 
-    const missingRequiredConfig =
-        args.required
-        && !(config[args.name] != null
-            || (args.aka
-                ? Array.isArray(args.aka)
-                    ? args.aka.some(n => config[n] != null)
-                    : config[args.aka] != null
-                : false));
-
-    if (missingRequiredConfig) {
+    if (isMissingRequiredConfig(args, config)) {
         const name = `${cmdKey}.${args.name}`;
         const message = args.message || name;
         const prompt = {
             name,
             message,
             type: 'input',
+            when: answers => isMissingRequiredConfig(merge(config, answers)),
             filter: v => v.split(' ').reduce((a, b, i, c) => {
                 if (i < c.length) {
                     if (b.endsWith('\\')) {
