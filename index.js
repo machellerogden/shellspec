@@ -5,6 +5,7 @@ module.exports = ShellSpec;
 const snakeCase = require('lodash/snakeCase');
 const mapKeys = require('lodash/mapKeys');
 const clone = require('lodash/cloneDeep');
+const get = require('lodash/get');
 const inquirer = require('inquirer');
 const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
@@ -286,17 +287,21 @@ function prompts(cmdPath, args, config, cmdKey) {
             name,
             message,
             type: 'input',
-            when: answers => isMissingRequiredConfig(merge(config, answers)),
-            filter: v => v.split(' ').reduce((a, b, i, c) => {
-                if (i < c.length) {
-                    if (b.endsWith('\\')) {
-                        b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
-                        c.splice(i + 1, 1);
-                    }
-                }
-                a = [ ...a, b ];
-                return a;
-            }, [])
+            when: answers => isMissingRequiredConfig(args, merge(config, get(answers, cmdKey, {})))
+
+            // TODO:
+            // Leaving the following in a comment for posterity.
+            // Clean this up once we figure out a better way to handle it.
+            //filter: v => v.split(' ').reduce((a, b, i, c) => {
+                //if (i < c.length) {
+                    //if (b.endsWith('\\')) {
+                        //b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
+                        //c.splice(i + 1, 1);
+                    //}
+                //}
+                //a = [ ...a, b ];
+                //return a;
+            //}, [])
         };
         if (args.choices) {
             prompt.type = 'list';
