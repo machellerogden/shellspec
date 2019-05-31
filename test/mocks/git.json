@@ -1861,13 +1861,17 @@
                         "name": "message",
                         "type": "option",
                         "join": "=",
-                        "without": [ "F", "f", "message" ]
+                        "without": [ "F", "f", "m" ],
+                        "aka": "m",
+                        "required": true
                     },
                     {
                         "name": "m",
                         "type": "flag",
                         "useValue": true,
-                        "without": [ "F", "file", "message" ]
+                        "without": [ "F", "file", "message" ],
+                        "aka": "message",
+                        "required": true
                     },
                     {
                         "name": "reset-author",

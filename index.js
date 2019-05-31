@@ -122,6 +122,17 @@ function tokenize(token, cmdPath, config) {
 
     if (typeof token === 'string') token = { name: token };
 
+    const missingRequiredConfig =
+        token.required
+        && !(config[token.name] != null
+            || (token.aka
+                ? Array.isArray(token.aka)
+                    ? token.aka.some(n => config[n] != null)
+                    : config[token.aka] != null
+                : false));
+
+    if (missingRequiredConfig) throw new Error(`missing required config for \`${token.name}\``);
+
     token.key = token.key == null
         ? token.name
         : token.key;
@@ -171,8 +182,8 @@ function validate(tokens) {
             if (!result) throw new Error(`the ${type} \`${name}\` must be accompanied by all of the following: \`${Array.isArray(arg.withAll) ? arg.withAll.join('\`, `') : arg.withAll}\``);
         }
 
-        if (arg.without) {
-            const result = findInSet(arg.without, tokens, type, name);
+        if (arg.without || arg.aka) {
+            const result = findInSet(arg.without || arg.aka, tokens, type, name);
             if (result != null) throw new Error(`the ${type} \`${name}\` and the ${result.type} \`${result.name}\` cannot be used together`);
         }
 
@@ -204,12 +215,12 @@ function emit(tokens) {
             key,
             type = 'option',
             value,
-            join:delimiter = false,
+            join:delimiter,
             useValue,
             prefix
         } = arg;
 
-        if (delimiter) {
+        if (delimiter != null) {
             delimiter = typeof delimiter === 'string'
                 ? delimiter
                 : '=';
@@ -267,7 +278,16 @@ function prompts(cmdPath, args, config, cmdKey) {
 
     if (typeof args === 'string') args = { name: args };
 
-    if (config[args.name] == null && args.required) {
+    const missingRequiredConfig =
+        args.required
+        && !(config[args.name] != null
+            || (args.aka
+                ? Array.isArray(args.aka)
+                    ? args.aka.some(n => config[n] != null)
+                    : config[args.aka] != null
+                : false));
+
+    if (missingRequiredConfig) {
         const name = `${cmdKey}.${args.name}`;
         const message = args.message || name;
         const prompt = {
@@ -330,7 +350,7 @@ function kvJoin(prefix, key, value, type, delimiter, useValue) {
             ? value.fill(key)
             : key
         : Array.isArray(value)
-            ? delimiter
+            ? delimiter != null
                 ? value.reduce((acc, v) => [
                     ...acc,
                     ...[ key, v ].join(delimiter)
@@ -340,7 +360,7 @@ function kvJoin(prefix, key, value, type, delimiter, useValue) {
                     key,
                     v
                   ], [])
-            : delimiter
+            : delimiter != null
                 ? [ key, value ].join(delimiter)
                 : [ key, value ];
 }

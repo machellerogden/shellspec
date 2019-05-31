@@ -840,3 +840,35 @@ test('command not found', t => {
 
     t.throws(() => getArgv({}, 'foo'), 'command `foo` not found');
 });
+
+test('aka', t => {
+
+    const { getArgv } = ShellSpec({
+        kind: 'shell',
+        spec: {
+            command: 'foo',
+            args: [
+                {
+                    name: 'bar',
+                    useValue: 'number',
+                    join: '=',
+                    required: true,
+                    aka: [ 'b' ]
+                },
+                {
+                    name: 'b',
+                    type: 'flag',
+                    useValue: 'number',
+                    required: true,
+                    join: '',
+                    aka: 'bar'
+                }
+            ]
+        }
+    });
+
+    t.throws(() => getArgv({}), 'missing required config for `bar`');
+    t.deepEqual(getArgv({ bar: 123 }), [ 'foo', '--bar=123' ]);
+    t.deepEqual(getArgv({ b: 123 }), [ 'foo', '-b123' ]);
+    t.throws(() => getArgv({ b: true, bar: true }), 'the option `bar` and the flag `b` cannot be used together');
+});
