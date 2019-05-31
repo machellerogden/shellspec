@@ -824,7 +824,7 @@ test('dynamic useValue does the right thing when join is specified', t => {
     });
 
     t.deepEqual(getArgv({ bar: true }), [ 'foo', '--bar' ]);
-    t.deepEqual(getArgv({ bar: "baz" }), [ 'foo', '--bar=baz' ]);
+    t.deepEqual(getArgv({ bar: 'baz' }), [ 'foo', '--bar=baz' ]);
     t.deepEqual(getArgv({ bar: false }), [ 'foo', '--bar' ]);
 });
 
@@ -833,4 +833,10 @@ test('git double dash on clone', t => {
     const { getArgv } = ShellSpec(git);
 
     t.deepEqual(getArgv({ clone: { '--': true, repository: 'foo' } }, 'clone'), [ 'git', 'clone', '--', 'foo' ]);
+});
+
+test('command not found', t => {
+    const { getArgv } = ShellSpec(git);
+
+    t.throws(() => getArgv({}, 'foo'), 'command `foo` not found');
 });

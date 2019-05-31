@@ -4,12 +4,11 @@ module.exports = ShellSpec;
 
 const snakeCase = require('lodash/snakeCase');
 const mapKeys = require('lodash/mapKeys');
-const cloneDeep = require('lodash/cloneDeep');
+const clone = require('lodash/cloneDeep');
 const inquirer = require('inquirer');
 const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
-const { clone } = require('mediary');
 
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
@@ -33,8 +32,10 @@ function ShellSpec(definition) {
     }
 
     function getArgv(config = {}, cmd = '') {
-        cmd = getCmdPath(main, cmd);
-        const rawTokens = tokenize(clone(spec), cmd, { [main]: config });
+        const cmdPath = getCmdPath(main, cmd);
+        const rawTokens = tokenize(clone(spec), cmdPath, { [main]: config });
+        const missingCmd = commandNotFound(cmdPath, rawTokens);
+        if (missingCmd) throw new Error(`command \`${missingCmd}\` not found`);
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
         const argv = emit(concattedTokens);
@@ -65,6 +66,13 @@ function ShellSpec(definition) {
         spawn,
         promptedSpawn
     };
+}
+
+function commandNotFound(cmdPath, tokens) {
+    const cmds = tokens.reduce((acc, { name, command = false }) => command
+        ? [ ...acc, name ]
+        : acc, []);
+    return cmdPath.find(c => !cmds.includes(c));
 }
 
 function concat(tokens) {
@@ -305,17 +313,18 @@ function standardizeToken(token) {
     return token;
 }
 
-const types = new Set([ 'string', 'number', 'boolean' ]);
+const primitives = new Set([ 'string', 'number', 'boolean' ]);
 function kvJoin(prefix, key, value, type, delimiter, useValue) {
     key = `${prefix}${key}`;
-    if (typeof useValue === 'string') useValue = types.has(useValue)
+    if (typeof useValue === 'string') useValue = primitives.has(useValue)
         ? typeof value === useValue
         : value == useValue;
     if (Array.isArray(useValue)) useValue = useValue.reduce((a, uv) =>
         a ||
-        types.has(uv)
+        primitives.has(uv)
             ? typeof value === uv
-            : value == uv, false);
+            : value == uv,
+        false);
     return useValue === false
         ? Array.isArray(value)
             ? value.fill(key)
@@ -352,9 +361,21 @@ function listConfig(spec, prefix) {
     return Array.isArray(spec)
         ? spec.reduce((acc, arg) => {
             if (arg.command) {
-                acc = [ ...acc, ...listConfig(arg.args || [], prefix ? `${prefix}.${arg.command}` : arg.command) ];
+                acc = [
+                    ...acc,
+                    ...listConfig(
+                        arg.args || [],
+                        prefix
+                            ? `${prefix}.${arg.command}`
+                            : arg.command)
+                ];
             } else if (arg.name) {
-                acc = [ ...acc, prefix ? `${prefix}.${arg.name}` : arg.name ];
+                acc = [
+                    ...acc,
+                    prefix
+                        ? `${prefix}.${arg.name}`
+                        : arg.name
+                ];
             }
             return acc;
         }, [])
@@ -386,7 +407,7 @@ function validateValue(choices, value, name, type) {
     }
 }
 
-function getByKeyDeep (obj, key, acc = {}) {
+function getByKeyDeep(obj, key, acc = {}) {
     return typeof obj === 'object'
         ? Array.isArray(obj)
             ? {
@@ -407,13 +428,23 @@ function getByKeyDeep (obj, key, acc = {}) {
 }
 
 function populateCollections(obj) {
+    // TODO:
+    // Make this actually readable and break it into generic pieces.
+    // It probably should just use a simple visitor pattern instead of this
+    // nonsense.
+    //
+    // Sincere apologies to anyone attempting to follow the plot. In leiu of
+    // semantic and readable code, here's a description of what's happening:
+    //
+    // 1. We pull out all "collections" from the spec merging them all into a
+    //    single map there is risk of collisions if spec hasn't been properly
+    //    crafted to ensure globally unique collection names.
+    // 2. We then take a depth first walk through the spec looking for all args
+    //    where a type === "collection" and replace each occurence with a spread
+    //    value from the collections map with key === name.
     const acc = { ...obj };
     const collections = getByKeyDeep(obj, 'collections');
 
-    // TODO:
-    // make this actually readable and break it into generic pieces.
-    // it probably should just use a simple visitor pattern.
-    // sorry world, I was rushing.
     function walk(value) {
         return typeof value === 'object'
             ? Array.isArray(value)
