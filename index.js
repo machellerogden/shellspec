@@ -204,6 +204,8 @@ function validate(tokens) {
             if (result != null) return argv;
         }
 
+        // TODO: choices should probably support string or array for a more
+        // flexible and consistent API. Right now, only arrays are allowed.
         if (Array.isArray(choices)) validateValue(choices, value, name, type);
 
         return [ ...argv, arg ];
