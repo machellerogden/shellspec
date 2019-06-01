@@ -134,8 +134,18 @@ function tokenize(token, cmdPath, config) {
     if (config[token.name] != null || [ 'variable' ].includes(token.type)) {
         token = standardizeToken(token);
         if (isTemplated(token.value)) {
-            // TODO: get rid of casing bullshit... add ctx?
-            let ctx = mapKeys(config, (v, k) => snakeCase(k));
+            // TODO:
+            // Find a workaround for case transform below. Introduces
+            // non-determinism via the possibility of name collisions. Easy fix
+            // is to force use a context object when user is writing template
+            // strings. i.e. Use `ctx["arg-name"]` in templates instead of
+            // `argName`. API is a bit uglier, but completely side-steps the
+            // possibility of collisions.
+            //
+            // Alternatively, we could parse template string ahead of evaluation
+            // and apply case change at compile time. Makes a more ideal template
+            // API but doesn't actually solve the essential problem.
+            const ctx = mapKeys(config, (v, k) => snakeCase(k));
             token.value = Array.isArray(token.value)
                     ? token.value.map(v => evaluate(`\`${v}\``, ctx))
                     : evaluate(`\`${token.value}\``, ctx);
@@ -455,8 +465,8 @@ function populateCollections(obj) {
     // semantic and readable code, here's a description of what's happening:
     //
     // 1. We pull out all "collections" from the spec merging them all into a
-    //    single map there is risk of collisions if spec hasn't been properly
-    //    crafted to ensure globally unique collection names.
+    //    single map. Note: spec must be properly defined to ensure globally
+    //    unique collection names.
     // 2. We then take a depth first walk through the spec looking for all args
     //    where a type === "collection" and replace each occurence with a spread
     //    value from the collections map with key === name.
