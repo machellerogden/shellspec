@@ -14,28 +14,25 @@ const child_process = require('child_process');
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
-    let { main:spec } = definition;
-
-    if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
-    if (!spec.name) throw new Error('invalid spec - missing main command definition');
+    // TODO: schema validation
 
     spec = populateCollections(spec);
-
-    const main = spec.name;
 
     function getConfigPaths(prefix) {
         return listConfig(spec, prefix);
     }
 
-    // TODO
+    // TODO: address impl after spec overhaul
     function getPrompts(config = {}, cmd = '') {
         const cmdPath = getCmdPath(main, cmd);
-        return prompts(cmdPath, clone(spec), { [main]: config });
+        return prompts(cmdPath, clone(spec), config);
     }
 
     function getArgv(config = {}, cmd = '') {
         const cmdPath = getCmdPath(main, cmd);
-        const rawTokens = tokenize(clone(spec), cmdPath, { [main]: config });
+        const mainCmd = selectCmd(spec, cmdPath[0]);
+        const rawTokens = tokenize(clone(mainCmd), cmdPath.slice(1), config);
+        // hmmmm....
         const missingCmd = commandNotFound(cmdPath, rawTokens);
         if (missingCmd) throw new Error(`command \`${missingCmd}\` not found`);
         const validTokens = validate(rawTokens);
@@ -95,16 +92,42 @@ function concat(tokens) {
     }, []);
 }
 
+function selectCmd(spec, cmdPath, versionString) {
+    if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
+
+    const mainCmdStr = cmdPath[0];
+    const mainCmdDef = spec.commands[mainCmdStr];
+
+    let mainCmd;
+
+    if (mainCmdDef == null) throw new Error(`Command \`${mainCmdStr}\` not found.`);
+
+    if (mainCmdDef.versions) {
+        const versions = mainCmdDef.versions;
+        const version = versions[versionString] || 'default';
+        // TODO: version aliasing... recursion
+        mainCmd = typeof version == 'object'
+            ? version
+            : versions[version];
+        // TODO: consider where this validation should actually go...
+        if (mainCmd == null) throw new Error(`Version \`${versionString}\` not found.`);
+    } else {
+        mainCmd = mainCmdDef;
+    }
+
+    return mainCmd;
+}
+
 function tokenize(spec, cmdPath, config) {
-    if (spec == null) throw new Error('invalid spec');
-    if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
-    let result = spec.name
+    if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
+
+    let result = spec
         ? [
             {
-                name: spec.name,
+                name: cmdPath[0],
                 type: 'value',
                 command: true,
-                value: spec.name
+                value: cmdPath[0]
             }
         ]
         : [];
@@ -154,7 +177,6 @@ function tokenize(spec, cmdPath, config) {
             return acc;
         }, [])
     ];
-
 
     if (spec.commands && spec.commands[cmdPath[0]]) {
         const nextCmdName = cmdPath[0];
@@ -388,15 +410,14 @@ function kvJoin(prefix, key, value, type, delimiter, useValue) {
                 : [ key, value ];
 }
 
-function getCmdPath(main, cmd) {
+function getCmdPath(cmd) {
     return cmd
         ? [
-            main,
             ...(Array.isArray(cmd)
                 ? cmd
                 : (cmd || '').split('.'))
           ]
-        : [ main ];
+        : [];
 }
 
 function listConfig(spec, prefix) {

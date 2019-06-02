@@ -1,34 +1,41 @@
 {
     "kind": "shell",
-    "spec": {
-        "command": "aws",
-        "args": [
-            {
-                "name": "debug",
-                "type": "option"
-            },
-            {
-                "name": "endpoint-url",
-                "type": "option"
-            },
-            {
-                "command": "s3",
-                "args": [
-                    {
-                        "command": "cp",
-                        "args": [
-                            {
-                                "name": "src",
-                                "type": "option"
-                            },
-                            {
-                                "name": "dest",
-                                "type": "option"
+    "version": "0.0.0",
+    "commands": {
+        "aws": {
+            "versions": {
+                "default": {
+                    "args": [
+                        {
+                            "name": "debug",
+                            "type": "option"
+                        },
+                        {
+                            "name": "endpoint-url",
+                            "type": "option"
+                        }
+                    ],
+                    "commands": {
+                        "s3": {
+                            "args": [],
+                            "commands": {
+                                "cp": {
+                                    "args": [
+                                        {
+                                            "name": "src",
+                                            "type": "option"
+                                        },
+                                        {
+                                            "name": "dest",
+                                            "type": "option"
+                                        }
+                                    ]
+                                }
                             }
-                        ]
+                        }
                     }
-                ]
+                }
             }
-        ]
+        }
     }
 }

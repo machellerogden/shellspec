@@ -1,12 +1,18 @@
 {
     "kind": "shell",
-    "spec": {
-        "command": "echo",
-        "args": [
-            {
-                "name": "args",
-                "type": "values"
+    "version": "0.0.0",
+    "commands": {
+        "echo": {
+            "versions": {
+                "default": {
+                    "args": [
+                        {
+                            "name": "args",
+                            "type": "values"
+                        }
+                    ]
+                }
             }
-        ]
+        }
     }
 }
