@@ -530,7 +530,7 @@ To expand a bit on the above...
 
 If an entire spec is loaded at compile time, consider the space and time
 complexity of loading and parsing what might be a 100k line spec file just to
-run a single sub-command. The performance implications not ideal.
+run a single sub-command. The performance implications are not ideal.
 
 The right EL, if applied dynamically at runtime, could side-step the concerns
 around space complexity, but in all the ELs I'm currently aware of, expressions
