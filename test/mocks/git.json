@@ -1,7 +1,8 @@
 {
     "kind": "shell",
-    "spec": {
-        "command": "git",
+    "specVersion": "0.0.0",
+    "main": {
+        "name": "git",
         "version": "2.21.0",
         "collections": {
             "verbose": [
@@ -823,9 +824,10 @@
                 "type": "option",
                 "join": "=",
                 "useValue": true
-            },
-            {
-                "command": "config",
+            }
+        ],
+        "commands": {
+            "config": {
                 "args": [
                     {
                         "name": "e",
@@ -991,8 +993,7 @@
                     }
                 ]
             },
-            {
-                "command": "help",
+            "help": {
                 "args": [
                     {
                         "name": "a",
@@ -1103,8 +1104,7 @@
                     }
                 ]
             },
-            {
-                "command": "init",
+            "init": {
                 "args": [
                     {
                         "name": "q",
@@ -1144,8 +1144,7 @@
                     }
                 ]
             },
-            {
-                "command": "clone",
+            "clone": {
                 "args": [
                     {
                         "name": "template",
@@ -1318,8 +1317,7 @@
                     }
                 ]
             },
-            {
-                "command": "add",
+            "add": {
                 "args": [
                     {
                         "name": "verbose",
@@ -1457,8 +1455,7 @@
                     }
                 ]
             },
-            {
-                "command": "status",
+            "status": {
                 "args": [
                     {
                         "name": "short",
@@ -1606,8 +1603,7 @@
                     }
                 ]
             },
-            {
-                "command": "diff",
+            "diff": {
                 "args": [
                     {
                         "name": "diffcore",
@@ -1727,8 +1723,7 @@
                     }
                 ]
             },
-            {
-                "command": "commit",
+            "commit": {
                 "args": [
                     {
                         "name": "all",
@@ -1998,8 +1993,7 @@
                     }
                 ]
             },
-            {
-                "command": "reset",
+            "reset": {
                 "args": [
                     {
                         "name": "patch",
@@ -2092,8 +2086,7 @@
                     }
                 ]
             },
-            {
-                "command": "rm",
+            "rm": {
                 "args": [
                     {
                         "name": "force",
@@ -2133,8 +2126,7 @@
                     }
                 ]
             },
-            {
-                "command": "mv",
+            "mv": {
                 "args": [
                     {
                         "name": "verbose",
@@ -2164,8 +2156,7 @@
                     }
                 ]
             },
-            {
-                "command": "branch",
+            "branch": {
                 "args": [
                     {
                         "name": "color-options",
@@ -2360,8 +2351,7 @@
                     }
                 ]
             },
-            {
-                "command": "checkout",
+            "checkout": {
                 "args": [
                     {
                         "name": "quiet",
@@ -2576,8 +2566,7 @@
                     }
                 ]
             },
-            {
-                "command": "rev-parse",
+            "rev-parse": {
                 "args": [
                     {
                         "name": "short",
@@ -2592,8 +2581,7 @@
                     }
                 ]
             },
-            {
-                "command": "push",
+            "push": {
                 "args": [
                     {
                         "name": "tags",
@@ -2602,8 +2590,7 @@
                     }
                 ]
             },
-            {
-                "command": "pull",
+            "pull": {
                 "args": [
                     {
                         "name": "rebase",
@@ -2618,6 +2605,6 @@
                     }
                 ]
             }
-        ]
+        }
     }
 }

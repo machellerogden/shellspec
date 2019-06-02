@@ -84,7 +84,7 @@ test('docker run', t => {
     t.deepEqual(argv, output);
 });
 
-test('git rev-parse defaults', t => {
+test.only('git rev-parse defaults', t => {
 
     const { getArgv } = ShellSpec(git);
 

@@ -14,22 +14,23 @@ const child_process = require('child_process');
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
-    let { spec } = definition;
+    let { main:spec } = definition;
 
     if (spec == null || typeof spec !== 'object') throw new Error('invalid spec');
-    if (!spec.command) throw new Error('invalid spec - missing main command definition');
+    if (!spec.name) throw new Error('invalid spec - missing main command definition');
 
     spec = populateCollections(spec);
 
-    const main = spec.command;
+    const main = spec.name;
 
-    function getConfigPaths() {
-        return listConfig(spec);
+    function getConfigPaths(prefix) {
+        return listConfig(spec, prefix);
     }
 
+    // TODO
     function getPrompts(config = {}, cmd = '') {
-        cmd = getCmdPath(main, cmd);
-        return prompts(cmd, clone(spec), { [main]: config }, cmd.join('.'));
+        const cmdPath = getCmdPath(main, cmd);
+        return prompts(cmdPath, clone(spec), { [main]: config });
     }
 
     function getArgv(config = {}, cmd = '') {
@@ -94,75 +95,86 @@ function concat(tokens) {
     }, []);
 }
 
-function tokenize(token, cmdPath, config) {
-    if (token == null) throw new Error('invalid arguments');
-
-    if (Array.isArray(token)) return token.reduce((a, t) => [
-        ...a,
-        ...tokenize(t, cmdPath, config)
-    ], []);
-
-    if (token.command && cmdPath[0] === token.command) {
-        if (typeof token.command !== 'string') throw new Error('Invalid Spec: command must be a string');
-
-        const nextToken = token.args || [];
-        const nextCmdPath = cmdPath.slice(1);
-        const nextConfig = config[token.command] || {};
-        const nextTokens = tokenize(nextToken, nextCmdPath, nextConfig);
-
-        return [
+function tokenize(spec, cmdPath, config) {
+    if (spec == null) throw new Error('invalid spec');
+    if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
+    let result = spec.name
+        ? [
             {
-                name: token.command,
+                name: spec.name,
                 type: 'value',
                 command: true,
-                value: token.command
+                value: spec.name
+            }
+        ]
+        : [];
+    result = [
+        ...result,
+        ...(spec.args || []).reduce((acc, arg) => {
+            if (typeof arg === 'string') arg = { name: arg };
+
+            if (isMissingRequiredConfig(arg, config)) throw new Error(`missing required config for \`${arg.name}\``);
+
+            arg.key = arg.key == null
+                ? arg.name
+                : arg.key;
+
+            if (config[arg.name] == null && arg.default) config[arg.name] = arg.default;
+
+            if (config[arg.name] != null || [ 'variable' ].includes(arg.type)) {
+                arg = standardizeToken(arg);
+                if (isTemplated(arg.value)) {
+                    // TODO:
+                    // Find a workaround for case transform below. Introduces
+                    // non-determinism via the possibility of name collisions. Easy fix
+                    // is to force use a context object when user is writing template
+                    // strings. i.e. Use `ctx["arg-name"]` in templates instead of
+                    // `argName`. API is a bit uglier, but completely side-steps the
+                    // possibility of collisions.
+                    //
+                    // Alternatively, we could parse template string ahead of evaluation
+                    // and apply case change at compile time. Makes a more ideal template
+                    // API but doesn't actually solve the essential problem.
+                    const ctx = mapKeys(config, (v, k) => snakeCase(k));
+                    arg.value = Array.isArray(arg.value)
+                            ? arg.value.map(v => evaluate(`\`${v}\``, ctx))
+                            : evaluate(`\`${arg.value}\``, ctx);
+                } else {
+                    arg.value = arg.value
+                        || (config[arg.name] != null
+                            ? config[arg.name]
+                            : null);
+                }
+                if (arg.type === 'variable') {
+                    config[arg.name] = arg.value;
+                } else {
+                    return [ ...acc, arg ];
+                }
+            }
+            return acc;
+        }, [])
+    ];
+
+
+    if (spec.commands && spec.commands[cmdPath[0]]) {
+        const nextCmdName = cmdPath[0];
+        const nextCmd = spec.commands[nextCmdName];
+        const nextCmdPath = cmdPath.slice(1);
+        const nextConfig = config[nextCmdName] || {};
+        const nextTokens = tokenize(nextCmd, nextCmdPath, nextConfig);
+        result = [
+            ...result,
+            {
+                name: nextCmdName,
+                type: 'value',
+                command: true,
+                value: nextCmdName
             },
             ...nextTokens
         ];
     }
 
-    if (typeof token === 'string') token = { name: token };
-
-    if (isMissingRequiredConfig(token, config)) throw new Error(`missing required config for \`${token.name}\``);
-
-    token.key = token.key == null
-        ? token.name
-        : token.key;
-
-    if (config[token.name] == null && token.default) config[token.name] = token.default;
-
-    if (config[token.name] != null || [ 'variable' ].includes(token.type)) {
-        token = standardizeToken(token);
-        if (isTemplated(token.value)) {
-            // TODO:
-            // Find a workaround for case transform below. Introduces
-            // non-determinism via the possibility of name collisions. Easy fix
-            // is to force use a context object when user is writing template
-            // strings. i.e. Use `ctx["arg-name"]` in templates instead of
-            // `argName`. API is a bit uglier, but completely side-steps the
-            // possibility of collisions.
-            //
-            // Alternatively, we could parse template string ahead of evaluation
-            // and apply case change at compile time. Makes a more ideal template
-            // API but doesn't actually solve the essential problem.
-            const ctx = mapKeys(config, (v, k) => snakeCase(k));
-            token.value = Array.isArray(token.value)
-                    ? token.value.map(v => evaluate(`\`${v}\``, ctx))
-                    : evaluate(`\`${token.value}\``, ctx);
-        } else {
-            token.value = token.value
-                || (config[token.name] != null
-                    ? config[token.name]
-                    : null);
-        }
-        if (token.type === 'variable') {
-            config[token.name] = token.value;
-        } else {
-            return [ token ];
-        }
-    }
-
-    return [];
+    return result;
 }
 
 function validate(tokens) {
@@ -271,35 +283,36 @@ function isMissingRequiredConfig(token, config) {
                 : false));
 }
 
-function prompts(cmdPath, args, config, cmdKey) {
-    if (args == null) throw new Error('invalid arguments');
+function prompts(cmdPath, spec, config) {
+    const cmdKey = cmdPath.join('.');
+    if (spec == null) throw new Error('invalid spec');
 
-    if (Array.isArray(args)) return args.reduce((a, v) => [
+    if (Array.isArray(spec)) return spec.reduce((a, v) => [
         ...a,
         ...prompts(cmdPath, v, config, cmdKey)
     ], []);
 
-    if (args.command && cmdPath[0] === args.command) {
-        if (typeof args.command !== 'string') throw new Error('invalid spec - command must be a string');
+    if (spec.command && cmdPath[0] === spec.command) {
+        if (typeof spec.command !== 'string') throw new Error('invalid spec - command must be a string');
         const nextCmdPath = cmdPath.slice(1);
-        const nextConfig = config[args.command] || {};
-        const nextArgs = args.args || [];
+        const nextConfig = config[spec.command] || {};
+        const nextArgs = spec.spec || [];
 
         return [
             ...prompts(nextCmdPath, nextArgs, nextConfig, cmdKey)
         ];
     }
 
-    if (typeof args === 'string') args = { name: args };
+    if (typeof spec === 'string') spec = { name: spec };
 
-    if (isMissingRequiredConfig(args, config)) {
-        const name = `${cmdKey}.${args.name}`;
-        const message = args.message || name;
+    if (isMissingRequiredConfig(spec, config)) {
+        const name = `${cmdKey}.${spec.name}`;
+        const message = spec.message || name;
         const prompt = {
             name,
             message,
             type: 'input',
-            when: answers => isMissingRequiredConfig(args, merge(config, get(answers, cmdKey, {})))
+            when: answers => isMissingRequiredConfig(spec, merge(config, get(answers, cmdKey, {})))
 
             // TODO:
             // Leaving the following in a comment for posterity.
@@ -315,9 +328,9 @@ function prompts(cmdPath, args, config, cmdKey) {
                 //return a;
             //}, [])
         };
-        if (args.choices) {
+        if (spec.choices) {
             prompt.type = 'list';
-            prompt.choices = args.choices;
+            prompt.choices = spec.choices;
         }
         return [ prompt ];
     }
@@ -388,28 +401,12 @@ function getCmdPath(main, cmd) {
 
 function listConfig(spec, prefix) {
     if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
-    return Array.isArray(spec)
-        ? spec.reduce((acc, arg) => {
-            if (arg.command) {
-                acc = [
-                    ...acc,
-                    ...listConfig(
-                        arg.args || [],
-                        prefix
-                            ? `${prefix}.${arg.command}`
-                            : arg.command)
-                ];
-            } else if (arg.name) {
-                acc = [
-                    ...acc,
-                    prefix
-                        ? `${prefix}.${arg.name}`
-                        : arg.name
-                ];
-            }
-            return acc;
-        }, [])
-        : spec.command && [ ...listConfig(spec.args || []) ];
+    return Object.entries(spec.commands || {}).reduce((acc, [ k, v ]) => {
+        const sub = v.commands
+            ? listConfig(v.commands, prefix).map(s => `${prefix ? `${prefix}.` : ''}${k}.${s}`)
+            : [];
+        return [ ...acc, k, ...sub ];
+    }, []);
 }
 
 function findInSet(testSet, tokens, type, name) {
@@ -437,27 +434,7 @@ function validateValue(choices, value, name, type) {
     }
 }
 
-function getByKeyDeep(obj, key, acc = {}) {
-    return typeof obj === 'object'
-        ? Array.isArray(obj)
-            ? {
-                ...acc,
-                ...obj.reduce((a, v) =>
-                    getByKeyDeep(v, key, a),
-                    {})
-              }
-            : {
-                ...acc,
-                ...Object.entries(obj).reduce((a, [ k, v ]) =>
-                    k === key
-                        ? { ...a, ...v }
-                        : getByKeyDeep(v, key, a),
-                    {})
-              }
-        : acc;
-}
-
-function populateCollections(obj) {
+function populateCollections(spec) {
     // TODO:
     // Make this actually readable and break it into generic pieces.
     // It probably should just use a simple visitor pattern instead of this
@@ -472,8 +449,8 @@ function populateCollections(obj) {
     // 2. We then take a depth first walk through the spec looking for all args
     //    where a type === "collection" and replace each occurence with a spread
     //    value from the collections map with key === name.
-    const acc = { ...obj };
-    const collections = getByKeyDeep(obj, 'collections');
+    const acc = { ...spec };
+    const collections = spec.collections;
 
     function walk(value) {
         return typeof value === 'object'

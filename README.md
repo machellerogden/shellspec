@@ -13,19 +13,34 @@ The intention of ShellSpec is that any shell command can be specified by impleme
 ```ts
 
 /**
- * Top-level of spec file must implement `Definition`
+ * Top-level of spec file must implement `Definition`.
  */
 interface Definition {
     kind: 'shell';
-    spec: Command;
-}
-
-interface Command {
 
     /**
-     * Name of command.
+     * Declares the version of ShellSpec used.
      */
-    command: string;
+    specVersion: string;
+
+
+    /**
+     * Defintion of entry-point command.
+     */
+    main: Main;
+}
+
+interface Main extends Command {
+
+    /**
+     * Name of main entry-point command.
+     */
+    name: string;
+
+    /**
+     * Declares the version of command being specified.
+     */
+    version: string;
 
     /**
      * Map of named collections which are reusable throughout args and
@@ -36,11 +51,21 @@ interface Command {
     collections?: {
         [key: string]: Args
     };
+}
 
+interface Command {
     /**
      * Collection of argument definitions.
      */
     args: Args;
+
+    /**
+     * Map of sub-commands where key is a string representing the command
+     * argument and the value implements `Command`.
+     */
+    commands?: {
+        [key: string]: Command
+    }
 }
 
 interface Args {
@@ -48,7 +73,7 @@ interface Args {
      * When value is `string`, implementation should treat as `Arg` with `name`
      * set to value and `type` set to 'option'`.
      */
-    [index: number]: Command | Arg | string;
+    [index: number]: Arg | string;
 }
 
 interface Arg {
@@ -508,7 +533,6 @@ docker.getArgv({
 
 ## TODO
 
-   *  Spec version support.
    *  Command version support.
 
 # A Note on Implementation Challenges
