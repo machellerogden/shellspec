@@ -588,7 +588,7 @@ interface Command {
 The challenge here would be in the implementation of the merge strategy,
 specifically regarding how to handle the ordering of positional arguments.
 There's no good solution for this that I'm able to conjure up at this time.
-Even my (sugarmerge)[https://www.npmjs.com/package/sugarmerge] package seems
+Even my [sugarmerge](https://www.npmjs.com/package/sugarmerge) package seems
 insufficient to the cause in this case. Honestly, sugarmerge could do it but
 any such implementation would be brittle and difficult to maintain as it
 would require specific and hard-coded splicing directives.
