@@ -16,7 +16,7 @@ function ShellSpec(definition) {
 
     // TODO: schema validation
 
-    spec = populateCollections(spec);
+    const spec = populateCollections(definition);
 
     function getConfigPaths(prefix) {
         return listConfig(spec, prefix);
@@ -24,14 +24,14 @@ function ShellSpec(definition) {
 
     // TODO: address impl after spec overhaul
     function getPrompts(config = {}, cmd = '') {
-        const cmdPath = getCmdPath(main, cmd);
+        const cmdPath = getCmdPath(cmd);
         return prompts(cmdPath, clone(spec), config);
     }
 
     function getArgv(config = {}, cmd = '') {
-        const cmdPath = getCmdPath(main, cmd);
+        const cmdPath = getCmdPath(cmd);
         const mainCmd = selectCmd(spec, cmdPath[0]);
-        const rawTokens = tokenize(clone(mainCmd), cmdPath.slice(1), config);
+        const rawTokens = tokenize(clone(mainCmd), cmdPath, config);
         // hmmmm....
         const missingCmd = commandNotFound(cmdPath, rawTokens);
         if (missingCmd) throw new Error(`command \`${missingCmd}\` not found`);
@@ -92,10 +92,17 @@ function concat(tokens) {
     }, []);
 }
 
-function selectCmd(spec, cmdPath, versionString) {
+function resolveVersion(versions, ver) {
+    if (typeof ver == 'object') return ver;
+    const version = versions[ver] || versions['default'];
+    if (typeof version == 'string') return resolveVersion(versions, version);
+    // TODO: tighten up recursion break case
+    return version;
+}
+
+function selectCmd(spec, mainCmdStr, versionString) {
     if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
-    const mainCmdStr = cmdPath[0];
     const mainCmdDef = spec.commands[mainCmdStr];
 
     let mainCmd;
@@ -103,36 +110,22 @@ function selectCmd(spec, cmdPath, versionString) {
     if (mainCmdDef == null) throw new Error(`Command \`${mainCmdStr}\` not found.`);
 
     if (mainCmdDef.versions) {
-        const versions = mainCmdDef.versions;
-        const version = versions[versionString] || 'default';
-        // TODO: version aliasing... recursion
-        mainCmd = typeof version == 'object'
-            ? version
-            : versions[version];
-        // TODO: consider where this validation should actually go...
+        mainCmd = resolveVersion(mainCmdDef.versions, versionString);
         if (mainCmd == null) throw new Error(`Version \`${versionString}\` not found.`);
     } else {
         mainCmd = mainCmdDef;
     }
 
-    return mainCmd;
+    return { commands: { [mainCmdStr]: mainCmd } };
 }
 
 function tokenize(spec, cmdPath, config) {
+    config = config == null || typeof config != 'object'
+        ? {}
+        : config;
     if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
-    let result = spec
-        ? [
-            {
-                name: cmdPath[0],
-                type: 'value',
-                command: true,
-                value: cmdPath[0]
-            }
-        ]
-        : [];
-    result = [
-        ...result,
+    let result = [
         ...(spec.args || []).reduce((acc, arg) => {
             if (typeof arg === 'string') arg = { name: arg };
 
