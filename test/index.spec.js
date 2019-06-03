@@ -994,10 +994,16 @@ test('git double dash on clone', t => {
     }, 'git.clone'), [ 'git', 'clone', '--', 'foo' ]);
 });
 
-test('command not found', t => {
+test('command not found - main cmd', t => {
     const { getArgv } = ShellSpec(git);
 
-    t.throws(() => getArgv({}, 'foo'), 'command `foo` not found');
+    t.throws(() => getArgv({}, 'foo'), 'Command `foo` not found.');
+});
+
+test('command not found - sub cmd', t => {
+    const { getArgv } = ShellSpec(git);
+
+    t.throws(() => getArgv({}, 'git.foo'), 'Command `foo` not found.');
 });
 
 test('aka', t => {

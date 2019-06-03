@@ -32,9 +32,6 @@ function ShellSpec(definition) {
         const cmdPath = getCmdPath(cmd);
         const mainCmd = selectCmd(spec, cmdPath[0]);
         const rawTokens = tokenize(clone(mainCmd), cmdPath, config);
-        // hmmmm....
-        const missingCmd = commandNotFound(cmdPath, rawTokens);
-        if (missingCmd) throw new Error(`command \`${missingCmd}\` not found`);
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
         const argv = emit(concattedTokens);
@@ -65,13 +62,6 @@ function ShellSpec(definition) {
         spawn,
         promptedSpawn
     };
-}
-
-function commandNotFound(cmdPath, tokens) {
-    const cmds = tokens.reduce((acc, { name, command = false }) => command
-        ? [ ...acc, name ]
-        : acc, []);
-    return cmdPath.find(c => !cmds.includes(c));
 }
 
 function concat(tokens) {
@@ -120,6 +110,7 @@ function selectCmd(spec, mainCmdStr, versionString) {
 }
 
 function tokenize(spec, cmdPath, config) {
+    // unnecessary defaulting?
     config = config == null || typeof config != 'object'
         ? {}
         : config;
@@ -171,7 +162,8 @@ function tokenize(spec, cmdPath, config) {
         }, [])
     ];
 
-    if (spec.commands && spec.commands[cmdPath[0]]) {
+    if (spec.commands) {
+        if (spec.commands[cmdPath[0]] == null) throw new Error(`Command \`${cmdPath[0]}\` not found.`);
         const nextCmdName = cmdPath[0];
         const nextCmd = spec.commands[nextCmdName];
         const nextCmdPath = cmdPath.slice(1);
