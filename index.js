@@ -25,13 +25,14 @@ function ShellSpec(definition) {
     // TODO: address impl after spec overhaul
     function getPrompts(cmd = '', config = {}) {
         const cmdPath = getCmdPath(cmd);
-        return prompts(cmdPath, clone(spec), config);
+        const mainCmd = selectCmd(cmdPath[0], spec);
+        return prompts(cmdPath, mainCmd, config);
     }
 
     function getArgv(cmd = '', config = {}) {
         const cmdPath = getCmdPath(cmd);
         const mainCmd = selectCmd(cmdPath[0], spec);
-        const rawTokens = tokenize(cmdPath, clone(mainCmd), config);
+        const rawTokens = tokenize(cmdPath, mainCmd, config);
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
         const argv = emit(concattedTokens);
@@ -106,7 +107,7 @@ function selectCmd(mainCmdStr, spec, versionString) {
         mainCmd = mainCmdDef;
     }
 
-    return { commands: { [mainCmdStr]: mainCmd } };
+    return { commands: { [mainCmdStr]: clone(mainCmd) } };
 }
 
 function tokenize(cmdPath, spec, config) {
@@ -403,12 +404,22 @@ function getCmdPath(cmd) {
 
 function listConfig(spec, prefix) {
     if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
-    return Object.entries(spec.commands || {}).reduce((acc, [ k, v ]) => {
-        const sub = v.commands
-            ? listConfig(v.commands, prefix).map(s => `${prefix ? `${prefix}.` : ''}${k}.${s}`)
-            : [];
-        return [ ...acc, k, ...sub ];
-    }, []);
+    const cmds = Object.keys(spec.commands || {}).map(c => selectCmd(c, spec));
+    function recur(s) {
+        return [
+            ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
+                const sub = v.commands || v.args
+                    ? recur(v).map(s => `${prefix ? `${prefix}.` : ''}${k}.${s}`)
+                    : [];
+                return [ ...acc, k, ...sub ];
+            }, []),
+            ...(s.args || []).map(({ name }) => name)
+        ];
+    }
+    return cmds.reduce((acc, cmd) => [
+        ...acc,
+        ...recur(cmd)
+    ], []);
 }
 
 function findInSet(testSet, tokens, type, name) {
