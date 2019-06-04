@@ -413,7 +413,7 @@ function listConfig(spec, prefix) {
                     : [];
                 return [ ...acc, k, ...sub ];
             }, []),
-            ...(s.args || []).map(({ name }) => name)
+            ...(s.args || []).map(arg => typeof arg === 'string' ? arg : arg.name)
         ];
     }
     return cmds.reduce((acc, cmd) => [
