@@ -21,7 +21,7 @@ test('aws 1', t => {
         }
     };
 
-    const argv = getArgv(config, 'aws.s3.cp');
+    const argv = getArgv('aws.s3.cp', config, );
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo', '--dest', './bar' ];
 
@@ -43,7 +43,7 @@ test('aws 2', t => {
         }
     };
 
-    const argv = getArgv(config, 'aws.s3.cp');
+    const argv = getArgv('aws.s3.cp', config);
 
     const output = [ 'aws', '--debug', 'true', 's3', 'cp', '--src', './foo' ];
 
@@ -64,7 +64,7 @@ test('docker build', t => {
         }
     };
 
-    const argv = getArgv(config, 'docker.build');
+    const argv = getArgv('docker.build', config);
 
     const output = [ 'docker', 'build', '--tag', 'foo:latest', '.' ];
 
@@ -85,7 +85,7 @@ test('docker run', t => {
         }
     };
 
-    const argv = getArgv(config, 'docker.run');
+    const argv = getArgv('docker.run', config);
 
     const output = [ 'docker', 'run', 'foo:latest', 'sh' ];
 
@@ -98,7 +98,7 @@ test('git rev-parse defaults', t => {
 
     const config = {};
 
-    const argv = getArgv(config, 'git.rev-parse');
+    const argv = getArgv('git.rev-parse', config);
 
     const output = [ 'git', 'rev-parse', '--short=12', 'HEAD' ];
 
@@ -118,7 +118,7 @@ test('git rev-parse w options', t => {
         }
     };
 
-    const argv = getArgv(config, 'git.rev-parse');
+    const argv = getArgv('git.rev-parse', config);
 
     const output = [ 'git', 'rev-parse', '--short=8', 'origin/master' ];
 
@@ -153,7 +153,7 @@ test('simple echo', t => {
         }
     };
 
-    const argv = getArgv(config, 'echo');
+    const argv = getArgv('echo', config);
 
     const output = [ 'echo', 'foo', 'bar', '123', 'true', 'false' ];
 
@@ -200,7 +200,7 @@ test('with 1', t => {
         }
     };
 
-    const argv = getArgv(config, 'greet');
+    const argv = getArgv('greet', config);
 
     const output = [ 'greet', '--formal', '--first-name', 'Jane', '--last-name', 'Heller-Ogden' ];
 
@@ -246,7 +246,7 @@ test('with 2', t => {
         }
     };
 
-    t.throws(() => getArgv(config, 'greet'), 'the option `formal` must be accompanied by `last-name`');
+    t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
 });
 
 test('with 3', t => {
@@ -288,7 +288,7 @@ test('with 3', t => {
         }
     };
 
-    t.throws(() => getArgv(config, 'greet'), 'the option `formal` must be accompanied by `last-name`');
+    t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
 });
 
 test('with all', t => {
@@ -326,22 +326,22 @@ test('with all', t => {
 
     const { getArgv } = ShellSpec(spec);
 
-    t.deepEqual(getArgv({
+    t.deepEqual(getArgv('foo', {
         foo: {
             a: true,
             b: true,
             c: true,
             d: true
         }
-    }, 'foo'), [ 'foo', '-a', '-b', '-c', '-d' ]);
+    }), [ 'foo', '-a', '-b', '-c', '-d' ]);
 
-    t.throws(() => getArgv({
+    t.throws(() => getArgv('foo', {
         foo: {
             a: true,
             b: true,
             d: true
         }
-    }, 'foo'), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
+    }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
 });
 
 test('with all 2', t => {
@@ -383,22 +383,22 @@ test('with all 2', t => {
 
     const { getArgv } = ShellSpec(spec);
 
-    t.deepEqual(getArgv({
+    t.deepEqual(getArgv('foo', {
         foo: {
             a: true,
             b: true,
             c: true,
             d: true
         }
-    }, 'foo'), [ 'foo', '-abcd' ]);
+    }), [ 'foo', '-abcd' ]);
 
-    t.throws(() => getArgv({
+    t.throws(() => getArgv('foo', {
         foo: {
             a: true,
             b: true,
             d: true
         }
-    }, 'foo'), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
+    }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
 });
 
 test('without 1', t => {
@@ -440,7 +440,7 @@ test('without 1', t => {
         }
     };
 
-    const argv = getArgv(config, 'greet');
+    const argv = getArgv('greet', config);
 
     const output = [ 'greet', '--casual', '--first-name', 'Jane' ];
 
@@ -487,7 +487,7 @@ test('without 2', t => {
         }
     };
 
-    t.throws(() => getArgv(config, 'greet'), 'the option `casual` and the option `last-name` cannot be used together');
+    t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
 test('without 3', t => {
@@ -530,7 +530,7 @@ test('without 3', t => {
         }
     };
 
-    t.throws(() => getArgv(config, 'greet'), 'the option `casual` and the option `last-name` cannot be used together');
+    t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
 test('concat flags', t => {
@@ -574,7 +574,7 @@ test('concat flags', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-abc' ];
 
@@ -621,7 +621,7 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-a', 'bar', '-c' ];
 
@@ -668,7 +668,7 @@ test('concat flags more tests', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-a', '-b', '-c' ];
 
@@ -717,7 +717,7 @@ test('concat flags does the right thing when useValue === true', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-ab', 'true', '-c' ];
 
@@ -752,7 +752,7 @@ test('multiple same option', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '--bar', 'a', '--bar', 'b', '--bar', 'c' ];
 
@@ -787,7 +787,7 @@ test('multiple same flag', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-b', '-b', '-b' ];
 
@@ -823,7 +823,7 @@ test('multiple same flag with value', t => {
         }
     };
 
-    const argv = getArgv(config, 'foo');
+    const argv = getArgv('foo', config);
 
     const output = [ 'foo', '-b', 'a', '-b', 'b', '-b', 'c' ];
 
@@ -857,8 +857,8 @@ test('arg can specify valid values as "choices"', t => {
 
     const { getArgv } = ShellSpec(spec);
 
-    t.deepEqual(getArgv({ foo: { bar: 'a' } }, 'foo'), [ 'foo', '--bar', 'a' ]);
-    t.throws(() => getArgv({ foo: { bar: 'd' } }, 'foo'), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
+    t.deepEqual(getArgv('foo', { foo: { bar: 'a' } }), [ 'foo', '--bar', 'a' ]);
+    t.throws(() => getArgv('foo', { foo: { bar: 'd' } }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
 });
 
 test('double dash args', t => {
@@ -873,7 +873,7 @@ test('double dash args', t => {
         }
     };
 
-    const argv = getArgv(config, 'git.add');
+    const argv = getArgv('git.add', config);
 
     const output = [ 'git', 'add', '--', './src', './dist' ];
 
@@ -902,15 +902,15 @@ test('useValue only for given type', t => {
 
     const { getArgv } = ShellSpec(spec);
 
-    t.deepEqual(getArgv({ foo: { bar: true } }, 'foo'), [ 'foo', '--bar' ]);
-    t.deepEqual(getArgv({ foo: { bar: 'baz' } }, 'foo'), [ 'foo', '--bar', 'baz' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: true } }), [ 'foo', '--bar' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: 'baz' } }), [ 'foo', '--bar', 'baz' ]);
 });
 
 test('conditional printing', t => {
 
     const { getArgv } = ShellSpec(git);
 
-    t.deepEqual(getArgv({
+    t.deepEqual(getArgv('git.branch', {
         git: {
             branch: {
                 D: true,
@@ -918,9 +918,9 @@ test('conditional printing', t => {
                 branchname: 'foo'
             }
         }
-    }, 'git.branch'), [ 'git', 'branch', '-D', '-r', 'foo' ]);
+    },), [ 'git', 'branch', '-D', '-r', 'foo' ]);
 
-    t.deepEqual(getArgv({
+    t.deepEqual(getArgv('git.branch', {
         git: {
             branch: {
                 list: true,
@@ -928,7 +928,7 @@ test('conditional printing', t => {
                 branchname: 'foo'
             }
         }
-    }, 'git.branch'), [ 'git', 'branch', '-r', '--list', 'foo' ]);
+    }), [ 'git', 'branch', '-r', '--list', 'foo' ]);
 });
 
 test('key can be different from name', t => {
@@ -951,7 +951,7 @@ test('key can be different from name', t => {
         }
     });
 
-    t.deepEqual(getArgv({ foo: { bar: true } }, 'foo'), [ 'foo', '--baz', 'true' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: true } }), [ 'foo', '--baz', 'true' ]);
 });
 
 test('dynamic useValue does the right thing when join is specified', t => {
@@ -975,35 +975,35 @@ test('dynamic useValue does the right thing when join is specified', t => {
         }
     });
 
-    t.deepEqual(getArgv({ foo: { bar: true } }, 'foo'), [ 'foo', '--bar' ]);
-    t.deepEqual(getArgv({ foo: { bar: 'baz' } }, 'foo'), [ 'foo', '--bar=baz' ]);
-    t.deepEqual(getArgv({ foo: { bar: false } }, 'foo'), [ 'foo', '--bar' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: true } }), [ 'foo', '--bar' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: 'baz' } }), [ 'foo', '--bar=baz' ]);
+    t.deepEqual(getArgv('foo', { foo: { bar: false } }), [ 'foo', '--bar' ]);
 });
 
 test('git double dash on clone', t => {
 
     const { getArgv } = ShellSpec(git);
 
-    t.deepEqual(getArgv({
+    t.deepEqual(getArgv('git.clone', {
         git: {
             clone: {
                 '--': true,
                 repository: 'foo'
             }
         }
-    }, 'git.clone'), [ 'git', 'clone', '--', 'foo' ]);
+    }), [ 'git', 'clone', '--', 'foo' ]);
 });
 
 test('command not found - main cmd', t => {
     const { getArgv } = ShellSpec(git);
 
-    t.throws(() => getArgv({}, 'foo'), 'Command `foo` not found.');
+    t.throws(() => getArgv('foo', {}), 'Command `foo` not found.');
 });
 
 test('command not found - sub cmd', t => {
     const { getArgv } = ShellSpec(git);
 
-    t.throws(() => getArgv({}, 'git.foo'), 'Command `foo` not found.');
+    t.throws(() => getArgv('git.foo', {}), 'Command `foo` not found.');
 });
 
 test('aka', t => {
@@ -1037,8 +1037,8 @@ test('aka', t => {
         }
     });
 
-    t.throws(() => getArgv({}, 'foo'), 'missing required config for `bar`');
-    t.deepEqual(getArgv({ foo: { bar: 123 } }, 'foo'), [ 'foo', '--bar=123' ]);
-    t.deepEqual(getArgv({ foo: { b: 123 } }, 'foo'), [ 'foo', '-b123' ]);
-    t.throws(() => getArgv({ foo: { b: true, bar: true } }, 'foo'), 'the option `bar` and the flag `b` cannot be used together');
+    t.throws(() => getArgv('foo', {}), 'missing required config for `bar`');
+    t.deepEqual(getArgv('foo', { foo: { bar: 123 } }), [ 'foo', '--bar=123' ]);
+    t.deepEqual(getArgv('foo', { foo: { b: 123 } }), [ 'foo', '-b123' ]);
+    t.throws(() => getArgv('foo', { foo: { b: true, bar: true } }), 'the option `bar` and the flag `b` cannot be used together');
 });

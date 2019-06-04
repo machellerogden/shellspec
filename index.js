@@ -23,34 +23,34 @@ function ShellSpec(definition) {
     }
 
     // TODO: address impl after spec overhaul
-    function getPrompts(config = {}, cmd = '') {
+    function getPrompts(cmd = '', config = {}) {
         const cmdPath = getCmdPath(cmd);
         return prompts(cmdPath, clone(spec), config);
     }
 
-    function getArgv(config = {}, cmd = '') {
+    function getArgv(cmd = '', config = {}) {
         const cmdPath = getCmdPath(cmd);
-        const mainCmd = selectCmd(spec, cmdPath[0]);
-        const rawTokens = tokenize(clone(mainCmd), cmdPath, config);
+        const mainCmd = selectCmd(cmdPath[0], spec);
+        const rawTokens = tokenize(cmdPath, clone(mainCmd), config);
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
         const argv = emit(concattedTokens);
         return argv;
     }
 
-    async function promptedArgv(config = {}, cmd = '') {
-        const prompts = getPrompts(config, cmd);
+    async function promptedArgv(cmd = '', config = {}) {
+        const prompts = getPrompts(cmd, config);
         const answers = (await inquirer.prompt(prompts))[main] || {};
-        return await getArgv(merge(config, answers), cmd);
+        return await getArgv(cmd, merge(config, answers));
     }
 
-    function spawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
-        const [ command, ...args ] = getArgv(config, cmd);
+    function spawn(cmd = '', config = {}, spawnOptions = { stdio: 'inherit' }) {
+        const [ command, ...args ] = getArgv(cmd, config);
         return child_process.spawn(command, args, spawnOptions);
     }
 
-    async function promptedSpawn(config = {}, cmd = '', spawnOptions = { stdio: 'inherit' }) {
-        const [ command, ...args ] = await promptedArgv(config, cmd);
+    async function promptedSpawn(cmd = '', config = {}, spawnOptions = { stdio: 'inherit' }) {
+        const [ command, ...args ] = await promptedArgv(cmd, config);
         return child_process.spawn(command, args, spawnOptions);
     }
 
@@ -90,7 +90,7 @@ function resolveVersion(versions, ver) {
     return version;
 }
 
-function selectCmd(spec, mainCmdStr, versionString) {
+function selectCmd(mainCmdStr, spec, versionString) {
     if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
     const mainCmdDef = spec.commands[mainCmdStr];
@@ -109,11 +109,7 @@ function selectCmd(spec, mainCmdStr, versionString) {
     return { commands: { [mainCmdStr]: mainCmd } };
 }
 
-function tokenize(spec, cmdPath, config) {
-    // unnecessary defaulting?
-    config = config == null || typeof config != 'object'
-        ? {}
-        : config;
+function tokenize(cmdPath, spec, config) {
     if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
     let result = [
@@ -168,7 +164,7 @@ function tokenize(spec, cmdPath, config) {
         const nextCmd = spec.commands[nextCmdName];
         const nextCmdPath = cmdPath.slice(1);
         const nextConfig = config[nextCmdName] || {};
-        const nextTokens = tokenize(nextCmd, nextCmdPath, nextConfig);
+        const nextTokens = tokenize(nextCmdPath, nextCmd, nextConfig);
         result = [
             ...result,
             {
