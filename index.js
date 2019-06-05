@@ -11,82 +11,96 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
-// WIP: schema
+const Joi = require('@hapi/joi');
+const {
+    alternatives,
+    any,
+    object,
+    string,
+    array,
+    boolean,
+    lazy
+} = Joi.bind();
 
-//const Joi = require('@hapi/joi');
-//const {
-    //alternatives,
-    //any,
-    //object,
-    //string,
-    //array,
-    ////func,
-    //boolean
-//} = Joi.bind();
+const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
 
-//const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+const conditionalsSchema = alternatives([
+    string(),
+    array().items(string())
+]);
 
-//const conditionalsSchema = alternatives([
-    //string(),
-    //array().items(string())
-//]);
+const argsSchema = array().items(alternatives([
+    string(),
+    object({
+        name: string().required(),
+        key: string(),
+        type: string().valid(
+            'option',
+            'flag',
+            'value',
+            'values',
+            'variable',
+            'collection'),
+        value: any(),
+        default: any(),
+        choices: array().items(string()),
+        with: conditionalsSchema,
+        withAll: conditionalsSchema,
+        without: conditionalsSchema,
+        when: conditionalsSchema,
+        whenAll: conditionalsSchema,
+        unless: conditionalsSchema,
+        required: boolean(),
+        useValue: boolean(),
+        join: alternatives([
+            boolean(),
+            string()
+        ]),
+        concatable: boolean(),
+        message: string(),
+        description: string()
+    })
+]));
 
-//const argSchema = alternatives([
-    //string(),
-    //object({
-        //name: string().required(),
-        //key: string(),
-        //type: string().valid(
-            //'option',
-            //'flag',
-            //'value',
-            //'values',
-            //'variable',
-            //'collection'),
-        //value: any(),
-        //default: any(),
-        //choices: array().items(string()),
-        //with: conditionalsSchema,
-        //withAll: conditionalsSchema,
-        //without: conditionalsSchema,
-        //when: conditionalsSchema,
-        //whenAll: conditionalsSchema,
-        //unless: conditionalsSchema,
-        //required: boolean(),
-        //useValue: boolean(),
-        //join: alternatives([
-            //boolean(),
-            //string()
-        //]),
-        //concatable: boolean(),
-        //message: string(),
-        //description: string()
-    //})
-//]);
+const commandsSchema = object().pattern(
+    string(),
+    alternatives([
+        lazy(() => commandSchema).description('Command schema'),
+        object({
+            versions: object().pattern(
+                string(),
+                alternatives([
+                    string(),
+                    object().pattern(
+                        string(),
+                        lazy(() => commandSchema).description('Command schema')
+                    )
+                ])
+            )
+        })
+    ])
+);
 
-//const argsSchema = array().items(argSchema);
+const commandSchema = object({
+    args: argsSchema,
+    commands: commandsSchema
+});
 
-//const commandSchema = object({
-    //args: argsSchema,
-    //commands: object().pattern(string(), commandSchema)
-//});
+const definitionSchema = object({
+    kind: string().valid('shell'),
+    version: string().regex(semverRegExp),
+    commands: commandsSchema,
+    collections: object().pattern(string(), argsSchema)
+});
 
-//const definitionSchema = object({
-    //kind: string().valid('shell'),
-    //version: string().regex(semverRegExp),
-    //commands: object().pattern(string(), commandSchema),
-    //collections: object().pattern(string(), argsSchema)
-//});
-
-// TODO: consider allowing unknowns?
 // .options({ allowUnknown: true });
 
-function ShellSpec(definition) {
+async function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
-    // TODO: schema validation
+    const def = await definitionSchema.validate(definition);
 
-    const spec = populateCollections(definition);
+    const spec = populateCollections(def);
 
     function getConfigPaths(prefix) {
         return listConfig(spec, prefix);

@@ -5,9 +5,9 @@ import aws from './mocks/aws';
 import docker from './mocks/docker';
 import git from './mocks/git';
 
-test('aws 1', t => {
+test('aws 1', async t => {
 
-    const { getArgv } = ShellSpec(aws);
+    const { getArgv } = await ShellSpec(aws);
 
     const config = {
         aws: {
@@ -28,9 +28,9 @@ test('aws 1', t => {
     t.deepEqual(argv, output);
 });
 
-test('aws 2', t => {
+test('aws 2', async t => {
 
-    const { getArgv } = ShellSpec(aws);
+    const { getArgv } = await ShellSpec(aws);
 
     const config = {
         aws: {
@@ -50,9 +50,9 @@ test('aws 2', t => {
     t.deepEqual(argv, output);
 });
 
-test('docker build', t => {
+test('docker build', async t => {
 
-    const { getArgv } = ShellSpec(docker);
+    const { getArgv } = await ShellSpec(docker);
 
     const config = {
         docker: {
@@ -71,9 +71,9 @@ test('docker build', t => {
     t.deepEqual(argv, output);
 });
 
-test('docker run', t => {
+test('docker run', async t => {
 
-    const { getArgv } = ShellSpec(docker);
+    const { getArgv } = await ShellSpec(docker);
 
     const config = {
         docker: {
@@ -92,9 +92,9 @@ test('docker run', t => {
     t.deepEqual(argv, output);
 });
 
-test('git rev-parse defaults', t => {
+test.only('git rev-parse defaults', async t => {
 
-    const { getArgv } = ShellSpec(git);
+    const { getArgv } = await ShellSpec(git);
 
     const config = {};
 
@@ -105,9 +105,9 @@ test('git rev-parse defaults', t => {
     t.deepEqual(argv, output);
 });
 
-test('git rev-parse w options', t => {
+test('git rev-parse w options', async t => {
 
-    const { getArgv } = ShellSpec(git);
+    const { getArgv } = await ShellSpec(git);
 
     const config = {
         git: {
@@ -125,7 +125,7 @@ test('git rev-parse w options', t => {
     t.deepEqual(argv, output);
 });
 
-test('simple echo', t => {
+test('simple echo', async t => {
 
     const spec = {
         kind: 'shell',
@@ -145,7 +145,7 @@ test('simple echo', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         echo: {
@@ -160,7 +160,7 @@ test('simple echo', t => {
     t.deepEqual(argv, output);
 });
 
-test('with 1', t => {
+test('with 1', async t => {
 
     const spec = {
         kind: 'shell',
@@ -190,7 +190,7 @@ test('with 1', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -207,7 +207,7 @@ test('with 1', t => {
     t.deepEqual(argv, output);
 });
 
-test('with 2', t => {
+test('with 2', async t => {
 
     const spec = {
         kind: 'shell',
@@ -237,7 +237,7 @@ test('with 2', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -249,7 +249,7 @@ test('with 2', t => {
     t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
 });
 
-test('with 3', t => {
+test('with 3', async t => {
 
     const spec = {
         kind: 'shell',
@@ -279,7 +279,7 @@ test('with 3', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -291,7 +291,7 @@ test('with 3', t => {
     t.throws(() => getArgv('greet', config), 'the option `formal` must be accompanied by `last-name`');
 });
 
-test('with all', t => {
+test('with all', async t => {
 
     const spec = {
         kind: 'shell',
@@ -324,7 +324,7 @@ test('with all', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     t.deepEqual(getArgv('foo', {
         foo: {
@@ -344,7 +344,7 @@ test('with all', t => {
     }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
 });
 
-test('with all 2', t => {
+test('with all 2', async t => {
 
     const spec = {
         kind: 'shell',
@@ -381,7 +381,7 @@ test('with all 2', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     t.deepEqual(getArgv('foo', {
         foo: {
@@ -401,7 +401,7 @@ test('with all 2', t => {
     }), 'the flag `a` must be accompanied by all of the following: `b`, `c`, `d`');
 });
 
-test('without 1', t => {
+test('without 1', async t => {
 
     const spec = {
         kind: 'shell',
@@ -431,7 +431,7 @@ test('without 1', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -447,7 +447,7 @@ test('without 1', t => {
     t.deepEqual(argv, output);
 });
 
-test('without 2', t => {
+test('without 2', async t => {
 
     const spec = {
         kind: 'shell',
@@ -477,7 +477,7 @@ test('without 2', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -490,7 +490,7 @@ test('without 2', t => {
     t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
-test('without 3', t => {
+test('without 3', async t => {
 
     const spec = {
         kind: 'shell',
@@ -520,7 +520,7 @@ test('without 3', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         greet: {
@@ -533,7 +533,7 @@ test('without 3', t => {
     t.throws(() => getArgv('greet', config), 'the option `casual` and the option `last-name` cannot be used together');
 });
 
-test('concat flags', t => {
+test('concat flags', async t => {
 
     const spec = {
         kind: 'shell',
@@ -564,7 +564,7 @@ test('concat flags', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -581,7 +581,7 @@ test('concat flags', t => {
     t.deepEqual(argv, output);
 });
 
-test('concat flags should only concat adjacent flags so as not to mess with arg order', t => {
+test('concat flags should only concat adjacent flags so as not to mess with arg order', async t => {
 
     const spec = {
         kind: 'shell',
@@ -611,7 +611,7 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -628,7 +628,7 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
     t.deepEqual(argv, output);
 });
 
-test('concat flags more tests', t => {
+test('concat flags more tests', async t => {
 
     const spec = {
         kind: 'shell',
@@ -658,7 +658,7 @@ test('concat flags more tests', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -675,7 +675,7 @@ test('concat flags more tests', t => {
     t.deepEqual(argv, output);
 });
 
-test('concat flags does the right thing when useValue === true', t => {
+test('concat flags does the right thing when useValue === true', async t => {
 
     const spec = {
         kind: 'shell',
@@ -707,7 +707,7 @@ test('concat flags does the right thing when useValue === true', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -724,7 +724,7 @@ test('concat flags does the right thing when useValue === true', t => {
     t.deepEqual(argv, output);
 });
 
-test('multiple same option', t => {
+test('multiple same option', async t => {
 
     const spec = {
         kind: 'shell',
@@ -744,7 +744,7 @@ test('multiple same option', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -759,7 +759,7 @@ test('multiple same option', t => {
     t.deepEqual(argv, output);
 });
 
-test('multiple same flag', t => {
+test('multiple same flag', async t => {
 
     const spec = {
         kind: 'shell',
@@ -779,7 +779,7 @@ test('multiple same flag', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -794,7 +794,7 @@ test('multiple same flag', t => {
     t.deepEqual(argv, output);
 });
 
-test('multiple same flag with value', t => {
+test('multiple same flag with value', async t => {
 
     const spec = {
         kind: 'shell',
@@ -815,7 +815,7 @@ test('multiple same flag with value', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     const config = {
         foo: {
@@ -830,7 +830,7 @@ test('multiple same flag with value', t => {
     t.deepEqual(argv, output);
 });
 
-test('arg can specify valid values as "choices"', t => {
+test('arg can specify valid values as "choices"', async t => {
 
     const spec = {
         kind: 'shell',
@@ -855,15 +855,15 @@ test('arg can specify valid values as "choices"', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     t.deepEqual(getArgv('foo', { foo: { bar: 'a' } }), [ 'foo', '--bar', 'a' ]);
     t.throws(() => getArgv('foo', { foo: { bar: 'd' } }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
 });
 
-test('double dash args', t => {
+test('double dash args', async t => {
 
-    const { getArgv } = ShellSpec(git);
+    const { getArgv } = await ShellSpec(git);
 
     const config = {
         git: {
@@ -880,7 +880,7 @@ test('double dash args', t => {
     t.deepEqual(argv, output);
 });
 
-test('useValue only for given type', t => {
+test('useValue only for given type', async t => {
     const spec = {
         kind: 'shell',
         commands: {
@@ -900,15 +900,15 @@ test('useValue only for given type', t => {
         }
     };
 
-    const { getArgv } = ShellSpec(spec);
+    const { getArgv } = await ShellSpec(spec);
 
     t.deepEqual(getArgv('foo', { foo: { bar: true } }), [ 'foo', '--bar' ]);
     t.deepEqual(getArgv('foo', { foo: { bar: 'baz' } }), [ 'foo', '--bar', 'baz' ]);
 });
 
-test('conditional printing', t => {
+test('conditional printing', async t => {
 
-    const { getArgv } = ShellSpec(git);
+    const { getArgv } = await ShellSpec(git);
 
     t.deepEqual(getArgv('git.branch', {
         git: {
@@ -931,9 +931,9 @@ test('conditional printing', t => {
     }), [ 'git', 'branch', '-r', '--list', 'foo' ]);
 });
 
-test('key can be different from name', t => {
+test('key can be different from name', async t => {
 
-    const { getArgv } = ShellSpec({
+    const { getArgv } = await ShellSpec({
         kind: 'shell',
         commands: {
             foo: {
@@ -954,9 +954,9 @@ test('key can be different from name', t => {
     t.deepEqual(getArgv('foo', { foo: { bar: true } }), [ 'foo', '--baz', 'true' ]);
 });
 
-test('dynamic useValue does the right thing when join is specified', t => {
+test('dynamic useValue does the right thing when join is specified', async t => {
 
-    const { getArgv } = ShellSpec({
+    const { getArgv } = await ShellSpec({
         kind: 'shell',
         commands: {
             foo: {
@@ -980,9 +980,9 @@ test('dynamic useValue does the right thing when join is specified', t => {
     t.deepEqual(getArgv('foo', { foo: { bar: false } }), [ 'foo', '--bar' ]);
 });
 
-test('git double dash on clone', t => {
+test('git double dash on clone', async t => {
 
-    const { getArgv } = ShellSpec(git);
+    const { getArgv } = await ShellSpec(git);
 
     t.deepEqual(getArgv('git.clone', {
         git: {
@@ -994,21 +994,21 @@ test('git double dash on clone', t => {
     }), [ 'git', 'clone', '--', 'foo' ]);
 });
 
-test('command not found - main cmd', t => {
-    const { getArgv } = ShellSpec(git);
+test('command not found - main cmd', async t => {
+    const { getArgv } = await ShellSpec(git);
 
     t.throws(() => getArgv('foo', {}), 'Command `foo` not found.');
 });
 
-test('command not found - sub cmd', t => {
-    const { getArgv } = ShellSpec(git);
+test('command not found - sub cmd', async t => {
+    const { getArgv } = await ShellSpec(git);
 
     t.throws(() => getArgv('git.foo', {}), 'Command `foo` not found.');
 });
 
-test('aka', t => {
+test('aka', async t => {
 
-    const { getArgv } = ShellSpec({
+    const { getArgv } = await ShellSpec({
         kind: 'shell',
         commands: {
             foo: {
@@ -1043,8 +1043,8 @@ test('aka', t => {
     t.throws(() => getArgv('foo', { foo: { b: true, bar: true } }), 'the option `bar` and the flag `b` cannot be used together');
 });
 
-test('getConfigPaths', t => {
-    const { getConfigPaths } = ShellSpec({
+test('getConfigPaths', async t => {
+    const { getConfigPaths } = await ShellSpec({
         kind: 'shell',
         commands: {
             a: {
@@ -1092,11 +1092,11 @@ test('getConfigPaths', t => {
     ])
 });
 
-test('versionless', t => {
+test('versionless', async t => {
     const {
         getArgv,
         getConfigPaths
-    } = ShellSpec({
+    } = await ShellSpec({
         kind: 'shell',
         commands: {
             a: {
@@ -1146,8 +1146,8 @@ test('versionless', t => {
     ])
 });
 
-test('getPrompts', t => {
-    const { getPrompts } = ShellSpec({
+test('getPrompts', async t => {
+    const { getPrompts } = await ShellSpec({
         kind: 'shell',
         commands: {
             foo: {
