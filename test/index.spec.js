@@ -1042,3 +1042,156 @@ test('aka', t => {
     t.deepEqual(getArgv('foo', { foo: { b: 123 } }), [ 'foo', '-b123' ]);
     t.throws(() => getArgv('foo', { foo: { b: true, bar: true } }), 'the option `bar` and the flag `b` cannot be used together');
 });
+
+test('getConfigPaths', t => {
+    const { getConfigPaths } = ShellSpec({
+        kind: 'shell',
+        commands: {
+            a: {
+                versions: {
+                    default: {
+                        commands: {
+                            b: {
+                                args: [
+                                    {
+                                        name: 'c',
+                                        type: 'flag'
+                                    }
+                                ],
+                                commands: {
+                                    d: {
+                                        commands: {
+                                            e: {
+                                                args: [
+                                                    {
+                                                        name: 'f',
+                                                        type: 'flag'
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            g: {
+                                args: [
+                                    'h'
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    t.deepEqual(getConfigPaths(), [
+        'a.b.c',
+        'a.b.d.e.f',
+        'a.g.h'
+    ])
+});
+
+test('versionless', t => {
+    const {
+        getArgv,
+        getConfigPaths
+    } = ShellSpec({
+        kind: 'shell',
+        commands: {
+            a: {
+                commands: {
+                    b: {
+                        args: [
+                            {
+                                name: 'c',
+                                type: 'flag'
+                            }
+                        ],
+                        commands: {
+                            d: {
+                                commands: {
+                                    e: {
+                                        args: [
+                                            {
+                                                name: 'f',
+                                                type: 'flag'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    g: {
+                        args: [
+                            'h'
+                        ]
+                    }
+                }
+            }
+        }
+    });
+
+    t.deepEqual(getArgv('a.b', { a: { b: { c: true } } }), [
+        'a',
+        'b',
+        '-c'
+    ]);
+
+    t.deepEqual(getConfigPaths(), [
+        'a.b.c',
+        'a.b.d.e.f',
+        'a.g.h'
+    ])
+});
+
+test('getPrompts', t => {
+    const { getPrompts } = ShellSpec({
+        kind: 'shell',
+        commands: {
+            foo: {
+                args: [
+                    {
+                        name: 'bar',
+                        required: 'true'
+                    }
+                ],
+                commands: {
+                    baz: {
+                        args: [
+                            {
+                                name: 'qux',
+                                required: true
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    });
+
+    t.deepEqual(getPrompts('foo', {
+        foo: {
+            bar: true,
+            baz: {
+                qux: true
+            }
+        }
+    }), []);
+    const p1 = getPrompts('foo', {
+        foo: {}
+    });
+    t.is(p1[0].name, 'foo.bar');
+    t.is(p1[0].message, 'foo.bar');
+    t.is(p1[0].type, 'input');
+    const p2 = getPrompts('foo.baz', {
+        foo: {}
+    });
+    t.is(p2[0].name, 'foo.bar');
+    t.is(p2[0].message, 'foo.bar');
+    t.is(p2[0].type, 'input');
+    t.is(p2[1].name, 'foo.baz.qux');
+    t.is(p2[1].message, 'foo.baz.qux');
+    t.is(p2[1].type, 'input');
+});

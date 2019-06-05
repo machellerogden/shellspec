@@ -21,7 +21,7 @@ interface Definition {
     /**
      * Declares the version of ShellSpec used.
      */
-    specVersion: string;
+    version?: string;
 
 
     /**

@@ -11,6 +11,76 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
+// WIP: schema
+
+//const Joi = require('@hapi/joi');
+//const {
+    //alternatives,
+    //any,
+    //object,
+    //string,
+    //array,
+    ////func,
+    //boolean
+//} = Joi.bind();
+
+//const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+
+//const conditionalsSchema = alternatives([
+    //string(),
+    //array().items(string())
+//]);
+
+//const argSchema = alternatives([
+    //string(),
+    //object({
+        //name: string().required(),
+        //key: string(),
+        //type: string().valid(
+            //'option',
+            //'flag',
+            //'value',
+            //'values',
+            //'variable',
+            //'collection'),
+        //value: any(),
+        //default: any(),
+        //choices: array().items(string()),
+        //with: conditionalsSchema,
+        //withAll: conditionalsSchema,
+        //without: conditionalsSchema,
+        //when: conditionalsSchema,
+        //whenAll: conditionalsSchema,
+        //unless: conditionalsSchema,
+        //required: boolean(),
+        //useValue: boolean(),
+        //join: alternatives([
+            //boolean(),
+            //string()
+        //]),
+        //concatable: boolean(),
+        //message: string(),
+        //description: string()
+    //})
+//]);
+
+//const argsSchema = array().items(argSchema);
+
+//const commandSchema = object({
+    //args: argsSchema,
+    //commands: object().pattern(string(), commandSchema)
+//});
+
+//const definitionSchema = object({
+    //kind: string().valid('shell'),
+    //version: string().regex(semverRegExp),
+    //commands: object().pattern(string(), commandSchema),
+    //collections: object().pattern(string(), argsSchema)
+//});
+
+// TODO: consider allowing unknowns?
+// .options({ allowUnknown: true });
+
 function ShellSpec(definition) {
     if (definition == null) throw new Error('invalid definition');
 
@@ -22,7 +92,6 @@ function ShellSpec(definition) {
         return listConfig(spec, prefix);
     }
 
-    // TODO: address impl after spec overhaul
     function getPrompts(cmd = '', config = {}) {
         const cmdPath = getCmdPath(cmd);
         const mainCmd = selectCmd(cmdPath[0], spec);
@@ -40,7 +109,7 @@ function ShellSpec(definition) {
     }
 
     async function promptedArgv(cmd = '', config = {}) {
-        const prompts = getPrompts(cmd, config);
+        const prompts = getPrompts(cmd, config, cmd);
         const answers = (await inquirer.prompt(prompts))[main] || {};
         return await getArgv(cmd, merge(config, answers));
     }
@@ -84,15 +153,15 @@ function concat(tokens) {
 }
 
 function resolveVersion(versions, ver) {
-    if (typeof ver == 'object') return ver;
+    if (typeof ver === 'object') return ver;
     const version = versions[ver] || versions['default'];
     if (typeof version == 'string') return resolveVersion(versions, version);
-    // TODO: tighten up recursion break case
+    // TODO: tighten up recursion exit clause
     return version;
 }
 
 function selectCmd(mainCmdStr, spec, versionString) {
-    if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
+    if (spec == null || typeof spec !== 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
     const mainCmdDef = spec.commands[mainCmdStr];
 
@@ -159,7 +228,7 @@ function tokenize(cmdPath, spec, config) {
         }, [])
     ];
 
-    if (spec.commands) {
+    if (spec.commands && cmdPath.length) {
         if (spec.commands[cmdPath[0]] == null) throw new Error(`Command \`${cmdPath[0]}\` not found.`);
         const nextCmdName = cmdPath[0];
         const nextCmd = spec.commands[nextCmdName];
@@ -287,59 +356,68 @@ function isMissingRequiredConfig(token, config) {
                 : false));
 }
 
-function prompts(cmdPath, spec, config) {
-    const cmdKey = cmdPath.join('.');
-    if (spec == null) throw new Error('invalid spec');
+// TODO: lots of duplicate code between this and the tokenize function. Should probably find a way to dry it up...
+function prompts(cmdPath, spec, config, cmdKey) {
+    if (spec == null || typeof spec != 'object' || Array.isArray(spec)) throw new Error('invalid spec');
 
-    if (Array.isArray(spec)) return spec.reduce((a, v) => [
-        ...a,
-        ...prompts(cmdPath, v, config, cmdKey)
-    ], []);
+    const currentCmdKey = cmdKey == null
+        ? cmdPath[0]
+        : cmdKey;
 
-    if (spec.command && cmdPath[0] === spec.command) {
-        if (typeof spec.command !== 'string') throw new Error('invalid spec - command must be a string');
+    let result = [
+        ...(spec.args || []).reduce((acc, arg) => {
+            if (typeof arg === 'string') arg = { name: arg };
+
+            if (isMissingRequiredConfig(arg, config)) {
+                const name = `${currentCmdKey}.${arg.name}`;
+                const message = arg.message || name;
+                const prompt = {
+                    name,
+                    message,
+                    type: 'input',
+                    when: answers => isMissingRequiredConfig(arg, merge(config, get(answers, currentCmdKey, {})))
+
+                    // TODO:
+                    // Leaving the following in a comment for posterity.
+                    // Clean this up once we figure out a better way to handle it.
+                    //filter: v => v.split(' ').reduce((a, b, i, c) => {
+                        //if (i < c.length) {
+                            //if (b.endsWith('\\')) {
+                                //b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
+                                //c.splice(i + 1, 1);
+                            //}
+                        //}
+                        //a = [ ...a, b ];
+                        //return a;
+                    //}, [])
+                };
+                if (arg.choices) {
+                    prompt.type = 'list';
+                    prompt.choices = arg.choices;
+                }
+                return [ ...acc, prompt ];
+            }
+            return acc;
+        }, [])
+    ];
+
+    if (spec.commands && cmdPath.length) {
+        if (spec.commands[cmdPath[0]] == null) throw new Error(`Command \`${cmdPath[0]}\` not found.`);
+        const nextCmdName = cmdPath[0];
+        const nextCmd = spec.commands[nextCmdName];
         const nextCmdPath = cmdPath.slice(1);
-        const nextConfig = config[spec.command] || {};
-        const nextArgs = spec.spec || [];
-
-        return [
-            ...prompts(nextCmdPath, nextArgs, nextConfig, cmdKey)
+        const nextConfig = config[nextCmdName] || {};
+        const nextCmdKey = typeof cmdKey === 'string'
+            ? `${cmdKey}.${nextCmdName}`
+            : nextCmdName;
+        const nextPrompts = prompts(nextCmdPath, nextCmd, nextConfig, nextCmdKey);
+        result = [
+            ...result,
+            ...nextPrompts
         ];
     }
 
-    if (typeof spec === 'string') spec = { name: spec };
-
-    if (isMissingRequiredConfig(spec, config)) {
-        const name = `${cmdKey}.${spec.name}`;
-        const message = spec.message || name;
-        const prompt = {
-            name,
-            message,
-            type: 'input',
-            when: answers => isMissingRequiredConfig(spec, merge(config, get(answers, cmdKey, {})))
-
-            // TODO:
-            // Leaving the following in a comment for posterity.
-            // Clean this up once we figure out a better way to handle it.
-            //filter: v => v.split(' ').reduce((a, b, i, c) => {
-                //if (i < c.length) {
-                    //if (b.endsWith('\\')) {
-                        //b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
-                        //c.splice(i + 1, 1);
-                    //}
-                //}
-                //a = [ ...a, b ];
-                //return a;
-            //}, [])
-        };
-        if (spec.choices) {
-            prompt.type = 'list';
-            prompt.choices = spec.choices;
-        }
-        return [ prompt ];
-    }
-
-    return [];
+    return result;
 }
 
 function isTemplated (value) {
@@ -407,13 +485,16 @@ function listConfig(spec, prefix) {
     const cmds = Object.keys(spec.commands || {}).map(c => selectCmd(c, spec));
     function recur(s) {
         return [
+            ...(s.args || []).map(arg =>
+                typeof arg === 'string'
+                    ? arg
+                    : arg.name),
             ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
                 const sub = v.commands || v.args
                     ? recur(v).map(s => `${prefix ? `${prefix}.` : ''}${k}.${s}`)
                     : [];
-                return [ ...acc, k, ...sub ];
-            }, []),
-            ...(s.args || []).map(arg => typeof arg === 'string' ? arg : arg.name)
+                return [ ...acc, ...sub ];
+            }, [])
         ];
     }
     return cmds.reduce((acc, cmd) => [

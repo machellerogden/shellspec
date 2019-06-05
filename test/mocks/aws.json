@@ -3,35 +3,31 @@
     "version": "0.0.0",
     "commands": {
         "aws": {
-            "versions": {
-                "default": {
-                    "args": [
-                        {
-                            "name": "debug",
-                            "type": "option"
-                        },
-                        {
-                            "name": "endpoint-url",
-                            "type": "option"
-                        }
-                    ],
+            "args": [
+                {
+                    "name": "debug",
+                    "type": "option"
+                },
+                {
+                    "name": "endpoint-url",
+                    "type": "option"
+                }
+            ],
+            "commands": {
+                "s3": {
+                    "args": [],
                     "commands": {
-                        "s3": {
-                            "args": [],
-                            "commands": {
-                                "cp": {
-                                    "args": [
-                                        {
-                                            "name": "src",
-                                            "type": "option"
-                                        },
-                                        {
-                                            "name": "dest",
-                                            "type": "option"
-                                        }
-                                    ]
+                        "cp": {
+                            "args": [
+                                {
+                                    "name": "src",
+                                    "type": "option"
+                                },
+                                {
+                                    "name": "dest",
+                                    "type": "option"
                                 }
-                            }
+                            ]
                         }
                     }
                 }
