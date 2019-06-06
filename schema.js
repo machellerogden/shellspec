@@ -76,7 +76,7 @@ const commandSchema = object({
     commands: object().pattern(string(), lazy(() => commandSchema))
 });
 
-const versionsSchema = baseSpecSchema.keys({
+const versionsSchema = object({
     versions: object().pattern(
         string(),
         alternatives([
