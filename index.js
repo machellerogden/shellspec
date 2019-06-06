@@ -11,94 +11,93 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
-//const Joi = require('@hapi/joi');
-//const {
-    //alternatives,
-    //any,
-    //object,
-    //string,
-    //array,
-    //boolean,
-    //lazy
-//} = Joi.bind();
+const Joi = require('@hapi/joi');
 
-//const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+const {
+    alternatives,
+    any,
+    object,
+    string,
+    array,
+    boolean,
+    lazy
+} = Joi.bind();
 
-//const conditionalsSchema = alternatives([
-    //string(),
-    //array().items(string())
-//]);
+const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
 
-//const argsSchema = array().items(alternatives([
-    //string(),
-    //object({
-        //name: string().required(),
-        //key: string(),
-        //type: string().valid(
-            //'option',
-            //'flag',
-            //'value',
-            //'values',
-            //'variable',
-            //'collection'),
-        //value: any(),
-        //default: any(),
-        //choices: array().items(string()),
-        //with: conditionalsSchema,
-        //withAll: conditionalsSchema,
-        //without: conditionalsSchema,
-        //when: conditionalsSchema,
-        //whenAll: conditionalsSchema,
-        //unless: conditionalsSchema,
-        //required: boolean(),
-        //useValue: boolean(),
-        //join: alternatives([
-            //boolean(),
-            //string()
-        //]),
-        //concatable: boolean(),
-        //message: string(),
-        //description: string()
-    //})
-//]));
+const conditionalsSchema = alternatives([
+    string(),
+    array().items(string())
+]);
 
-//const commandsSchema = object().pattern(
-    //string(),
-    //alternatives([
-        //lazy(() => commandSchema).description('Command schema'),
-        //object({
-            //versions: object().pattern(
-                //string(),
-                //alternatives([
-                    //string(),
-                    //object().pattern(
-                        //string(),
-                        //lazy(() => commandSchema).description('Command schema')
-                    //)
-                //])
-            //)
-        //})
-    //])
-//);
+const argsSchema = array().items(alternatives([
+    string(),
+    object({
+        name: string().required(),
+        key: string(),
+        type: string().valid(
+            'option',
+            'flag',
+            'value',
+            'values',
+            'variable',
+            'collection'),
+        value: any(),
+        default: any(),
+        choices: array().items(string()),
+        with: conditionalsSchema,
+        withAll: conditionalsSchema,
+        without: conditionalsSchema,
+        when: conditionalsSchema,
+        whenAll: conditionalsSchema,
+        unless: conditionalsSchema,
+        required: boolean(),
+        useValue: alternatives([
+            string().valid('string', 'number', 'boolean'),
+            boolean()
+        ]),
+        join: alternatives([
+            boolean(),
+            string()
+        ]),
+        concatable: boolean(),
+        message: string(),
+        description: string()
+    })
+]));
 
-//const commandSchema = object({
-    //args: argsSchema,
-    //commands: commandsSchema
-//});
+const commandSchema = object({
+    args: argsSchema,
+    commands: object().pattern(string(), lazy(() => commandSchema))
+});
 
-//const definitionSchema = object({
-    //kind: string().valid('shell'),
-    //version: string().regex(semverRegExp),
-    //commands: commandsSchema,
-    //collections: object().pattern(string(), argsSchema)
-//});
+const specSchema = commandSchema.keys({
+    main: string(),
+    versions: object().pattern(
+        string(),
+        alternatives([
+            string(),
+            commandSchema
+        ])
+    ),
+    collections: object().pattern(
+        string(),
+        argsSchema
+    )
+});
+
+const definitionSchema = object({
+    kind: string().valid('shell'),
+    version: string().regex(semverRegExp),
+    spec: specSchema
+});
 
 // .options({ allowUnknown: true });
 
 async function ShellSpec(definition, cmdVersion = 'default') {
     if (definition == null) throw new Error('invalid definition');
 
-    //const def = await definitionSchema.validate(definition);
+    definition = await definitionSchema.validate(definition);
 
     const {
         spec,
