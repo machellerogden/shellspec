@@ -11,7 +11,6 @@ The intention of ShellSpec is that any shell command can be specified by impleme
 > TypeScript is used below to describe the specification. TypeScript is prefered over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It appears here simply to act as a descriptor syntax.
 
 ```ts
-
 /**
  * Top-level of spec file must implement `Definition`.
  */
@@ -25,22 +24,17 @@ interface Definition {
 
 
     /**
-     * Defintion of entry-point command.
+     * Definition of entry-point command.
      */
-    main: Main;
+    spec: Spec
 }
 
-interface Main extends Command {
+interface BaseSpec {
 
     /**
      * Name of main entry-point command.
      */
-    name: string;
-
-    /**
-     * Declares the version of command being specified.
-     */
-    version: string;
+    main: string;
 
     /**
      * Map of named collections which are reusable throughout args and
@@ -52,6 +46,29 @@ interface Main extends Command {
         [key: string]: Args
     };
 }
+
+interface VersionedSpec extends BaseSpec {
+    versions: {
+        [key: string]: string | Command
+    }
+}
+
+interface UnversionedSpec extends BaseSpec {
+    /**
+     * Collection of argument definitions.
+     */
+    args: Args;
+
+    /**
+     * Map of sub-commands where key is a string representing the command
+     * argument and the value implements `Command`.
+     */
+    commands?: {
+        [key: string]: Command
+    }
+}
+
+type Spec = VersionedSpec | UnversionedSpec;
 
 interface Command {
     /**
@@ -207,7 +224,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'echo',
+        main: 'echo',
         args: [
             {
                 name: 'args',
@@ -259,7 +276,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'echo',
+        main: 'echo',
         args: [
             {
                 name: 'args',
@@ -303,7 +320,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'echo',
+        main: 'echo',
         args: [
             {
                 name: 'args',
@@ -330,7 +347,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'echo',
+        main: 'echo',
         args: [
             {
                 name: 'args',
@@ -364,7 +381,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'aws',
+        main: 'aws',
         args: [
             {
                 name: 'debug',
@@ -422,7 +439,7 @@ const ShellSpec = require('shellspec');
 const spec = {
     kind: 'shell',
     spec: {
-        command: 'docker',
+        main: 'docker',
         collections: {
             tag: [
                 {
@@ -530,96 +547,6 @@ docker.getArgv({
 // => [ 'docker', 'run', 'foo:latest', 'sh' ];
 
 ```
-
-## TODO
-
-   *  Command version support.
-
-# A Note on Implementation Challenges
-
-The main challenge with specing commands in a single data structure is that spec
-files can quickly grow to be thousands of lines of data. Consider what the spec
-file for the AWS CLI might look like—I haven't attempted it but I imagine it
-would surpass 100k lines of formatted JSON data. Currently there are a couple
-different approaches I've considered which might help address this issue.
-
-Splitting the spec into multiple files is the obvious solution in terms of
-maintainability but this would requires the author to add a compile stage in
-order to build the data back into a single spec for parsing or it would require
-some sort of expression language (EL) which could be evaluated at runtime which
-would allow partials to be loaded only as needed. Both of these approaches would
-be implementation concerns—the spec definition itself remains valid.
-
-To expand a bit on the above...
-
-If an entire spec is loaded at compile time, consider the space and time
-complexity of loading and parsing what might be a 100k line spec file just to
-run a single sub-command. The performance implications are not ideal.
-
-The right EL, if applied dynamically at runtime, could side-step the concerns
-around space complexity, but in all the ELs I'm currently aware of, expressions
-are evaluated at compile-time. Regardless, theoretically, this could be solved
-outside of the spec definition by a sufficiently rigorous implementation.
-
-You'll note that the spec definition does not yet address command versioning.
-Supporting multiple versions in a single spec further compounds the above
-issue. For now, you can simply draft multiple specifications and compile from a
-common base specification if it makes sense to do so. But there could be a good
-argument out there for baking versioning into the spec itself. Regardless,
-sharing and re-using data between versions becomes critical to any practical
-implementation of versioning.
-
-The exact definition for versioning of commands is still being considered,
-but below is one possible proposal being considered.
-
-The Definition node would accept a `Versions` node as an alternative to the
-current definition which only accepts a `Command` node.
-
-```ts
-interface Definition {
-    kind: 'shell';
-    spec: Versions | Command;
-}
-```
-
-A `Versions` node would defined as a map with a required `default` key, the
-value of which would be a version string which acts as a key with which to
-resolve the default `Command` node. Remaining properties on the `Versions` node
-would be version strings. The value of a any given key could be either
-a `Command` node, or a string referencing another key on the `Versions`
-node. Supporting version strings that reference other version string would be
-necessary in order to support tag-like versions such as "latest" or "stable".
-
-```ts
-interface Versions {
-    default: string
-    [key: string]?: Command | string
-}
-```
-
-Additionally, the `Command` node would be updated to include an optional
-`extends` key the value of which would be a version string. When defined,
-the implementation would be expected to deep merge the `Command` node with
-the version of the `Command` node as resolved by it's `extends` key.
-
-```ts
-interface Command {
-    extends?: string
-    // ...
-}
-```
-
-The challenge here would be in the implementation of the merge strategy,
-specifically regarding how to handle the ordering of positional arguments.
-There's no good solution for this that I'm able to conjure up at this time.
-Even my [sugarmerge](https://www.npmjs.com/package/sugarmerge) package seems
-insufficient to the cause in this case. Honestly, sugarmerge could do it but
-any such implementation would be brittle and difficult to maintain as it
-would require specific and hard-coded splicing directives.
-
-So, for now, versioning remains purely an implementation concern. If anyone
-is able to propose a reasonable solution, or if something else comes to me
-I'd love to find a way to roll it in.
 
 # License
 

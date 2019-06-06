@@ -1,34 +1,33 @@
 {
     "kind": "shell",
     "version": "0.0.0",
-    "commands": {
-        "aws": {
-            "args": [
-                {
-                    "name": "debug",
-                    "type": "option"
-                },
-                {
-                    "name": "endpoint-url",
-                    "type": "option"
-                }
-            ],
-            "commands": {
-                "s3": {
-                    "args": [],
-                    "commands": {
-                        "cp": {
-                            "args": [
-                                {
-                                    "name": "src",
-                                    "type": "option"
-                                },
-                                {
-                                    "name": "dest",
-                                    "type": "option"
-                                }
-                            ]
-                        }
+    "spec": {
+        "main": "aws",
+        "args": [
+            {
+                "name": "debug",
+                "type": "option"
+            },
+            {
+                "name": "endpoint-url",
+                "type": "option"
+            }
+        ],
+        "commands": {
+            "s3": {
+                "args": [],
+                "commands": {
+                    "cp": {
+                        "args": [
+                            {
+                                "name": "src",
+                                "type": "option"
+                            },
+                            {
+                                "name": "dest",
+                                "type": "option"
+                            }
+                        ]
                     }
                 }
             }

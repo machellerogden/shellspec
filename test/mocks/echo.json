@@ -1,14 +1,13 @@
 {
     "kind": "shell",
     "version": "0.0.0",
-    "commands": {
-        "echo": {
-            "args": [
-                {
-                    "name": "args",
-                    "type": "values"
-                }
-            ]
-        }
+    "spec": {
+        "main": "echo":,
+        "args": [
+            {
+                "name": "args",
+                "type": "values"
+            }
+        ]
     }
 }

@@ -11,125 +11,152 @@ const { merge } = require('sugarmerge');
 const evaluate = require('./evaluate');
 const child_process = require('child_process');
 
-const Joi = require('@hapi/joi');
-const {
-    alternatives,
-    any,
-    object,
-    string,
-    array,
-    boolean,
-    lazy
-} = Joi.bind();
+//const Joi = require('@hapi/joi');
+//const {
+    //alternatives,
+    //any,
+    //object,
+    //string,
+    //array,
+    //boolean,
+    //lazy
+//} = Joi.bind();
 
-const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+//const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
 
-const conditionalsSchema = alternatives([
-    string(),
-    array().items(string())
-]);
+//const conditionalsSchema = alternatives([
+    //string(),
+    //array().items(string())
+//]);
 
-const argsSchema = array().items(alternatives([
-    string(),
-    object({
-        name: string().required(),
-        key: string(),
-        type: string().valid(
-            'option',
-            'flag',
-            'value',
-            'values',
-            'variable',
-            'collection'),
-        value: any(),
-        default: any(),
-        choices: array().items(string()),
-        with: conditionalsSchema,
-        withAll: conditionalsSchema,
-        without: conditionalsSchema,
-        when: conditionalsSchema,
-        whenAll: conditionalsSchema,
-        unless: conditionalsSchema,
-        required: boolean(),
-        useValue: boolean(),
-        join: alternatives([
-            boolean(),
-            string()
-        ]),
-        concatable: boolean(),
-        message: string(),
-        description: string()
-    })
-]));
+//const argsSchema = array().items(alternatives([
+    //string(),
+    //object({
+        //name: string().required(),
+        //key: string(),
+        //type: string().valid(
+            //'option',
+            //'flag',
+            //'value',
+            //'values',
+            //'variable',
+            //'collection'),
+        //value: any(),
+        //default: any(),
+        //choices: array().items(string()),
+        //with: conditionalsSchema,
+        //withAll: conditionalsSchema,
+        //without: conditionalsSchema,
+        //when: conditionalsSchema,
+        //whenAll: conditionalsSchema,
+        //unless: conditionalsSchema,
+        //required: boolean(),
+        //useValue: boolean(),
+        //join: alternatives([
+            //boolean(),
+            //string()
+        //]),
+        //concatable: boolean(),
+        //message: string(),
+        //description: string()
+    //})
+//]));
 
-const commandsSchema = object().pattern(
-    string(),
-    alternatives([
-        lazy(() => commandSchema).description('Command schema'),
-        object({
-            versions: object().pattern(
-                string(),
-                alternatives([
-                    string(),
-                    object().pattern(
-                        string(),
-                        lazy(() => commandSchema).description('Command schema')
-                    )
-                ])
-            )
-        })
-    ])
-);
+//const commandsSchema = object().pattern(
+    //string(),
+    //alternatives([
+        //lazy(() => commandSchema).description('Command schema'),
+        //object({
+            //versions: object().pattern(
+                //string(),
+                //alternatives([
+                    //string(),
+                    //object().pattern(
+                        //string(),
+                        //lazy(() => commandSchema).description('Command schema')
+                    //)
+                //])
+            //)
+        //})
+    //])
+//);
 
-const commandSchema = object({
-    args: argsSchema,
-    commands: commandsSchema
-});
+//const commandSchema = object({
+    //args: argsSchema,
+    //commands: commandsSchema
+//});
 
-const definitionSchema = object({
-    kind: string().valid('shell'),
-    version: string().regex(semverRegExp),
-    commands: commandsSchema,
-    collections: object().pattern(string(), argsSchema)
-});
+//const definitionSchema = object({
+    //kind: string().valid('shell'),
+    //version: string().regex(semverRegExp),
+    //commands: commandsSchema,
+    //collections: object().pattern(string(), argsSchema)
+//});
 
 // .options({ allowUnknown: true });
 
-async function ShellSpec(definition) {
+async function ShellSpec(definition, cmdVersion = 'default') {
     if (definition == null) throw new Error('invalid definition');
 
-    const def = await definitionSchema.validate(definition);
+    //const def = await definitionSchema.validate(definition);
 
-    const spec = populateCollections(def);
+    const {
+        spec,
+        version
+    } = definition;
+
+    const {
+        main,
+        collections,
+
+        // either
+        versions,
+
+        // or
+        commands,
+        args = []
+
+    } = spec;
+
+    const cmdDef = versions
+        ? resolveVersion(versions, cmdVersion)
+        : { commands, args };
+
+    const cmdSpec = {
+        commands: {
+            // NB, might need deep clone on value...
+            [main]: populateCollections(cmdDef, collections)
+        }
+    };
+
 
     function getConfigPaths(prefix) {
-        return listConfig(spec, prefix);
+        return listConfig(cmdDef, main, prefix);
     }
 
-    function getPrompts(cmd = '', config = {}) {
-        const cmdPath = getCmdPath(cmd);
-        const mainCmd = selectCmd(cmdPath[0], spec);
-        return prompts(cmdPath, mainCmd, config);
+    function getPrompts(config = {}, cmd = '') {
+        const cmdPath = getCmdPath(main, cmd);
+        return prompts(cmdPath, cmdSpec, { [main]: config });
     }
 
-    function getArgv(cmd = '', config = {}) {
-        const cmdPath = getCmdPath(cmd);
-        const mainCmd = selectCmd(cmdPath[0], spec);
-        const rawTokens = tokenize(cmdPath, mainCmd, config);
+    function getArgv(config = {}, cmd = '') {
+        const cmdPath = getCmdPath(main, cmd);
+        const rawTokens = tokenize(cmdPath, clone(cmdSpec), { [main]: config });
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
         const argv = emit(concattedTokens);
         return argv;
     }
 
-    async function promptedArgv(cmd = '', config = {}) {
-        const prompts = getPrompts(cmd, config, cmd);
+    async function promptedArgv(config = {}, cmd = '') {
+        const prompts = getPrompts(config, cmd);
         const answers = (await inquirer.prompt(prompts))[main] || {};
-        return await getArgv(cmd, merge(config, answers));
+        return await getArgv(merge(config, answers), cmd);
     }
 
-    function spawn(cmd = '', config = {}, spawnOptions = { stdio: 'inherit' }) {
-        const [ command, ...args ] = getArgv(cmd, config);
+    function spawn(config = {}, cmd, spawnOptions = { stdio: 'inherit' }) {
+        cmd = cmd || '';
+        const [ command, ...args ] = getArgv(config, cmd);
         return child_process.spawn(command, args, spawnOptions);
     }
 
@@ -172,25 +199,6 @@ function resolveVersion(versions, ver) {
     if (typeof version == 'string') return resolveVersion(versions, version);
     // TODO: tighten up recursion exit clause
     return version;
-}
-
-function selectCmd(mainCmdStr, spec, versionString) {
-    if (spec == null || typeof spec !== 'object' || Array.isArray(spec)) throw new Error('invalid spec');
-
-    const mainCmdDef = spec.commands[mainCmdStr];
-
-    let mainCmd;
-
-    if (mainCmdDef == null) throw new Error(`Command \`${mainCmdStr}\` not found.`);
-
-    if (mainCmdDef.versions) {
-        mainCmd = resolveVersion(mainCmdDef.versions, versionString);
-        if (mainCmd == null) throw new Error(`Version \`${versionString}\` not found.`);
-    } else {
-        mainCmd = mainCmdDef;
-    }
-
-    return { commands: { [mainCmdStr]: clone(mainCmd) } };
 }
 
 function tokenize(cmdPath, spec, config) {
@@ -484,19 +492,19 @@ function kvJoin(prefix, key, value, type, delimiter, useValue) {
                 : [ key, value ];
 }
 
-function getCmdPath(cmd) {
+function getCmdPath(main, cmd) {
     return cmd
         ? [
+            main,
             ...(Array.isArray(cmd)
                 ? cmd
                 : (cmd || '').split('.'))
           ]
-        : [];
+        : [ main ];
 }
 
-function listConfig(spec, prefix) {
+function listConfig(spec, main, prefix) {
     if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
-    const cmds = Object.keys(spec.commands || {}).map(c => selectCmd(c, spec));
     function recur(s) {
         return [
             ...(s.args || []).map(arg =>
@@ -505,16 +513,13 @@ function listConfig(spec, prefix) {
                     : arg.name),
             ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
                 const sub = v.commands || v.args
-                    ? recur(v).map(s => `${prefix ? `${prefix}.` : ''}${k}.${s}`)
+                    ? recur(v).map(s => `${k}.${s}`)
                     : [];
                 return [ ...acc, ...sub ];
             }, [])
         ];
     }
-    return cmds.reduce((acc, cmd) => [
-        ...acc,
-        ...recur(cmd)
-    ], []);
+    return recur(spec).map(v => `${prefix ? `${prefix}.` : ''}${main}.${v}`);
 }
 
 function findInSet(testSet, tokens, type, name) {
@@ -542,7 +547,7 @@ function validateValue(choices, value, name, type) {
     }
 }
 
-function populateCollections(spec) {
+function populateCollections(spec, collections) {
     // TODO:
     // Make this actually readable and break it into generic pieces.
     // It probably should just use a simple visitor pattern instead of this
@@ -558,7 +563,6 @@ function populateCollections(spec) {
     //    where a type === "collection" and replace each occurence with a spread
     //    value from the collections map with key === name.
     const acc = { ...spec };
-    const collections = spec.collections;
 
     function walk(value) {
         return typeof value === 'object'
