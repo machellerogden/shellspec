@@ -63,6 +63,14 @@ const argsSchema = array().items(
     })
 );
 
+const baseSpecSchema = object({
+    main: string(),
+    collections: object().pattern(
+        string(),
+        argsSchema
+    )
+});
+
 const commandSchema = object({
     args: argsSchema,
     commands: object().pattern(string(), lazy(() => commandSchema))
@@ -76,19 +84,19 @@ const versionsSchema = object().pattern(
     ])
 );
 
-const specSchema = commandSchema.keys({
-    main: string(),
-    versions: versionsSchema,
-    collections: object().pattern(
-        string(),
-        argsSchema
-    )
+const versionedSpecSchema = baseSpecSchema.keys({
+    versions: versionsSchema
 });
+
+const unversionedSpecSchema = baseSpecSchema.concat(commandSchema);
 
 const definitionSchema = object({
     kind: string().valid('shell'),
     version: string().regex(semverRegExp),
-    spec: specSchema
+    spec: alternatives([
+        versionedSpecSchema,
+        unversionedSpecSchema
+    ])
 });
 
 module.exports = definitionSchema;
