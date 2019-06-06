@@ -76,17 +76,17 @@ const commandSchema = object({
     commands: object().pattern(string(), lazy(() => commandSchema))
 });
 
-const versionsSchema = object().pattern(
-    string(),
-    alternatives([
+const versionsSchema = baseSpecSchema.keys({
+    versions: object().pattern(
         string(),
-        commandSchema
-    ])
-);
-
-const versionedSpecSchema = baseSpecSchema.keys({
-    versions: versionsSchema
+        alternatives([
+            string(),
+            commandSchema
+        ])
+    )
 });
+
+const versionedSpecSchema = baseSpecSchema.concat(versionsSchema);
 
 const unversionedSpecSchema = baseSpecSchema.concat(commandSchema);
 
