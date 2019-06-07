@@ -7,7 +7,7 @@ import git from './mocks/git';
 
 test('aws 1', async t => {
 
-    const { getArgv } = await ShellSpec(aws);
+    const { getArgv } = ShellSpec(aws);
 
     const config = {
         debug: true,
@@ -28,7 +28,7 @@ test('aws 1', async t => {
 
 test('aws 2', async t => {
 
-    const { getArgv } = await ShellSpec(aws);
+    const { getArgv } = ShellSpec(aws);
 
     const config = {
         debug: true,
@@ -48,7 +48,7 @@ test('aws 2', async t => {
 
 test('docker build', async t => {
 
-    const { getArgv } = await ShellSpec(docker);
+    const { getArgv } = ShellSpec(docker);
 
     const config = {
         build: {
@@ -67,7 +67,7 @@ test('docker build', async t => {
 
 test('docker run', async t => {
 
-    const { getArgv } = await ShellSpec(docker);
+    const { getArgv } = ShellSpec(docker);
 
     const config = {
         run: {
@@ -86,7 +86,7 @@ test('docker run', async t => {
 
 test('git rev-parse defaults', async t => {
 
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     const config = {};
 
@@ -99,7 +99,7 @@ test('git rev-parse defaults', async t => {
 
 test('git rev-parse w options', async t => {
 
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     const config = {
         "rev-parse": {
@@ -135,7 +135,7 @@ test('simple echo', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         args: [ 'foo', 'bar', 123, true, false ]
@@ -178,7 +178,7 @@ test('with 1', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -223,7 +223,7 @@ test('with 2', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -263,7 +263,7 @@ test('with 3', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -306,7 +306,7 @@ test('with all', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     t.deepEqual(getArgv({
         a: true,
@@ -355,7 +355,7 @@ test('with all 2', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     t.deepEqual(getArgv({
         a: true,
@@ -397,7 +397,7 @@ test('without 1', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -437,7 +437,7 @@ test('without 2', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -478,7 +478,7 @@ test('without 3', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         'first-name': 'Jane',
@@ -520,7 +520,7 @@ test('concat flags', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         a: true,
@@ -565,7 +565,7 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         a: true,
@@ -610,7 +610,7 @@ test('concat flags more tests', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         a: true,
@@ -657,7 +657,7 @@ test('concat flags does the right thing when useValue === true', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         a: true,
@@ -692,7 +692,7 @@ test('multiple same option', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         bar: [ 'a', 'b', 'c' ]
@@ -721,7 +721,7 @@ test('multiple same flag', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         b: [ 'a', 'b', 'c' ]
@@ -751,7 +751,7 @@ test('multiple same flag with value', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     const config = {
         b: [ 'a', 'b', 'c' ]
@@ -789,7 +789,7 @@ test('arg can specify valid values as "choices"', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     t.deepEqual(getArgv({ bar: 'a' }), [ 'foo', '--bar', 'a' ]);
     t.throws(() => getArgv({ bar: 'd' }), 'the option `bar` has invalid value of "d". Valid values are: "a", "b", "c"');
@@ -797,7 +797,7 @@ test('arg can specify valid values as "choices"', async t => {
 
 test('double dash args', async t => {
 
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     const config = {
         add: {
@@ -832,7 +832,7 @@ test('useValue only for given type', async t => {
         }
     };
 
-    const { getArgv } = await ShellSpec(spec);
+    const { getArgv } = ShellSpec(spec);
 
     t.deepEqual(getArgv({ bar: true }), [ 'foo', '--bar' ]);
     t.deepEqual(getArgv({ bar: 'baz' }), [ 'foo', '--bar', 'baz' ]);
@@ -840,7 +840,7 @@ test('useValue only for given type', async t => {
 
 test('conditional printing', async t => {
 
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     t.deepEqual(getArgv({
         branch: {
@@ -861,7 +861,7 @@ test('conditional printing', async t => {
 
 test('key can be different from name', async t => {
 
-    const { getArgv } = await ShellSpec({
+    const { getArgv } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
@@ -884,7 +884,7 @@ test('key can be different from name', async t => {
 
 test('dynamic useValue does the right thing when join is specified', async t => {
 
-    const { getArgv } = await ShellSpec({
+    const { getArgv } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
@@ -910,7 +910,7 @@ test('dynamic useValue does the right thing when join is specified', async t => 
 
 test('git double dash on clone', async t => {
 
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     t.deepEqual(getArgv({
         clone: {
@@ -921,14 +921,14 @@ test('git double dash on clone', async t => {
 });
 
 test('command not found', async t => {
-    const { getArgv } = await ShellSpec(git);
+    const { getArgv } = ShellSpec(git);
 
     t.throws(() => getArgv({}, 'foo'), 'Command `foo` not found.');
 });
 
 test('aka', async t => {
 
-    const { getArgv } = await ShellSpec({
+    const { getArgv } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
@@ -964,7 +964,7 @@ test('aka', async t => {
 });
 
 test('getConfigPaths', async t => {
-    const { getConfigPaths } = await ShellSpec({
+    const { getConfigPaths } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
@@ -1012,7 +1012,7 @@ test('versionless', async t => {
     const {
         getArgv,
         getConfigPaths
-    } = await ShellSpec({
+    } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
@@ -1063,7 +1063,7 @@ test('versionless', async t => {
 });
 
 test('getPrompts', async t => {
-    const { getPrompts } = await ShellSpec({
+    const { getPrompts } = ShellSpec({
         kind: 'shell',
         version: '1.0.0',
         spec: {
