@@ -12,14 +12,19 @@ const {
     lazy
 } = Joi.bind();
 
-const semverRegExp = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/;
+const [ major ] = require('./version').split('.');
+const versionRegExp = new RegExp(`^${major}\\.?\\d+?.\\d+?`);
 
 const conditionalsSchema = alternatives([
     string(),
     array().items(string())
 ]);
 
-const useValueTypesSchema = string().valid('string', 'number', 'boolean');
+const useValueTypesSchema = string().valid(
+    'string',
+    'number',
+    'boolean'
+);
 
 const argsSchema = array().items(
     string(), 
@@ -35,9 +40,10 @@ const argsSchema = array().items(
             'flag',
             'value',
             'values',
+            '--',
             'variable',
-            'collection',
-            '--'),
+            'collection'
+        ),
         value: any(),
         default: any(),
         choices: array().items(boolean(), string()),
@@ -92,7 +98,7 @@ const unversionedSpecSchema = baseSpecSchema.concat(commandSchema);
 
 const definitionSchema = object({
     kind: string().valid('shell'),
-    version: string().regex(semverRegExp),
+    version: string().regex(versionRegExp).required(),
     spec: alternatives([
         versionedSpecSchema,
         unversionedSpecSchema

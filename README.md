@@ -2,25 +2,43 @@
 
 > Shell command specification and JavaScript reference implementation
 
+### Contents
+
+* [Versions](#versions)
+* [Specification](#specification)
+* [Reference Implementation](#reference-implementation)
+
+### Versions
+
+* **Latest**: `1.0.0`
+* **Stable**: `1.0.0`
 
 # Specification
 
-The intention of ShellSpec is that any shell command can be specified by implementing the `Definition` interface below.
+The intention of ShellSpec is that any arbitrary shell command can be specified
+by implementing the `Definition` interface below.
 
 > #### A Note on Descriptor Syntax
-> TypeScript is used below to describe the specification. TypeScript is prefered over something like EBNF in hopes that it will be more approachable. Please note ShellSpec has nothing to do with TypeScript. Even the reference implementation (contained in this repo) does not use TypeScript. It appears here simply to act as a descriptor syntax.
+> TypeScript is used below to describe the specification. TypeScript is prefered
+> over something like EBNF in hopes that it will be more approachable. Please
+> note ShellSpec has nothing to do with TypeScript. Even the reference
+> implementation (contained in this repo) does not use TypeScript. It appears
+> here simply to act as a descriptor syntax.
 
 ```ts
 /**
  * Top-level of spec file must implement `Definition`.
  */
 interface Definition {
+    /**
+     * Indicates to consumers that this is a ShellSpec specification.
+     */
     kind: 'shell';
 
     /**
-     * Declares the version of ShellSpec used.
+     * Version of the ShellSpec specification being implemented.
      */
-    version?: string;
+    version: string;
 
 
     /**
@@ -51,6 +69,12 @@ interface VersionedSpec extends BaseSpec {
     versions: {
         [key: string]: string | Command
     }
+
+    /**
+     * Note: When using versioned spec, `args` and `command` are not allowed.
+     */
+    args?: undefined;
+    commands?: undefined;
 }
 
 interface UnversionedSpec extends BaseSpec {
@@ -66,6 +90,11 @@ interface UnversionedSpec extends BaseSpec {
     commands?: {
         [key: string]: Command
     }
+
+    /**
+     * Note: When using unversioned spec, `versions` is not allowed.
+     */
+    versions?: undefined;
 }
 
 type Spec = VersionedSpec | UnversionedSpec;
@@ -93,6 +122,8 @@ interface Args {
     [index: number]: Arg | string;
 }
 
+type useValueTypes = 'string' | 'number' | 'boolean';
+
 interface Arg {
 
     /**
@@ -106,10 +137,37 @@ interface Arg {
     key?: string;
 
     /**
+     * Indicates argument(s) of other name(s) are synonymous.
+     */
+    aka?: string | string[];
+
+    /**
      * When `type` is not provided, implementation is expected to default to
      * 'option'.
+     * 
+     *   - `option`: prepends `name` or `key` with "--" when emitting argv.
+     *               i.e. `[ ..., "--foo" ]`
+     *   - `flag`: prepends `name` or `key` with "-" when emitting argv.
+     *             i.e. `[ ..., "-f" ]`
+     *   - `value`: uses `name` or `key` as-is when emitting argv.
+     *              i.e. `[ ..., "foo" ]`
+     *   - `values`: same behavior as `value` (may change in future versions)
+     *              i.e. `[ ..., "foo" ]`
+     *   - `--`: spreads arg `value` (as declared or as resolved from config)
+     *           after a "--" field when emitting argv.
+     *           i.e. `[ ..., "--", "bar" ]`
+     *   - `variable`: provides a mechanism for declaring, sourcing or
+     *                 templating variable data. Is not emitted.
+     *   - `collection`: provices a mechanism for populating argv from named
+     *                   collections of arguments.
      */
-    type?: 'option' | 'flag' | 'value' | 'values' | 'variable' | 'collection';
+    type?: 'option'
+        | 'flag'
+        | 'value'
+        | 'values'
+        | '--'
+        | 'variable'
+        | 'collection';
 
     /**
      * Optional hard-coded value for argument.
@@ -175,8 +233,14 @@ interface Arg {
     /**
      * Defaults to `true` for Arg of `type` = "option" and to `false` for Arg of
      * `type` = "flag".
+     * Alternatively, can be defined as one or more of the following strings:
+     *   - "string"
+     *   - "number"
+     *   - "boolean"
+     * If this form is used, then only values matching indicated type will be
+     * emitted.
      */
-    useValue?: boolean;
+    useValue?: boolean | useValueTypes | useValueTypes[];
 
     /**
      * Joins name and value with given string. When `true` name and value will

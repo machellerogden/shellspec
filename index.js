@@ -13,23 +13,15 @@ const child_process = require('child_process');
 const definitionSchema = require('./schema');
 
 async function ShellSpec(definition, cmdVersion = 'default') {
-    if (definition == null) throw new Error('invalid definition');
-
-    definition = await definitionSchema.validate(definition);
-
     const {
         spec,
         version
-    } = definition;
+    } = await definitionSchema.validate(definition);
 
     const {
         main,
         collections,
-
-        // either
         versions,
-
-        // or
         commands,
         args = []
 

@@ -119,6 +119,7 @@ test('simple echo', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "echo",
             versions: {
@@ -151,6 +152,7 @@ test('with 1', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             versions: {
@@ -195,6 +197,7 @@ test('with 2', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             versions: {
@@ -234,6 +237,7 @@ test('with 3', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             versions: {
@@ -273,6 +277,7 @@ test('with all', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -321,6 +326,7 @@ test('with all 2', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             args: [
@@ -369,6 +375,7 @@ test('without 1', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             args: [
@@ -408,6 +415,7 @@ test('without 2', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             args: [
@@ -444,6 +452,7 @@ test('without 3', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "greet",
             versions: {
@@ -484,6 +493,7 @@ test('concat flags', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -529,6 +539,7 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -573,6 +584,7 @@ test('concat flags more tests', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -617,6 +629,7 @@ test('concat flags does the right thing when useValue === true', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -663,6 +676,7 @@ test('multiple same option', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -695,6 +709,7 @@ test('multiple same flag', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             args: [
@@ -723,6 +738,7 @@ test('multiple same flag with value', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             args: [
@@ -752,6 +768,7 @@ test('arg can specify valid values as "choices"', async t => {
 
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -798,6 +815,7 @@ test('double dash args', async t => {
 test('useValue only for given type', async t => {
     const spec = {
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -845,6 +863,7 @@ test('key can be different from name', async t => {
 
     const { getArgv } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -867,6 +886,7 @@ test('dynamic useValue does the right thing when join is specified', async t => 
 
     const { getArgv } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -910,6 +930,7 @@ test('aka', async t => {
 
     const { getArgv } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             versions: {
@@ -945,6 +966,7 @@ test('aka', async t => {
 test('getConfigPaths', async t => {
     const { getConfigPaths } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "a",
             commands: {
@@ -992,6 +1014,7 @@ test('versionless', async t => {
         getConfigPaths
     } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "a",
             commands: {
@@ -1042,6 +1065,7 @@ test('versionless', async t => {
 test('getPrompts', async t => {
     const { getPrompts } = await ShellSpec({
         kind: 'shell',
+        version: '1.0.0',
         spec: {
             main: "foo",
             args: [
