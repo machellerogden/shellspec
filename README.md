@@ -287,6 +287,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'echo',
         args: [
@@ -339,6 +340,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'echo',
         args: [
@@ -383,6 +385,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'echo',
         args: [
@@ -410,6 +413,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'echo',
         args: [
@@ -444,6 +448,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'aws',
         args: [
@@ -454,12 +459,12 @@ const spec = {
             {
                 name: 'endpoint-url',
                 type: 'option'
-            },
-            {
-                command: 's3',
-                args: [
-                    {
-                        command: 'cp',
+            }
+        ],
+        commands: {
+            s3: {
+                commands: {
+                    cp: {
                         args: [
                             {
                                 name: 'src',
@@ -471,9 +476,9 @@ const spec = {
                             }
                         ]
                     }
-                ]
+                }
             }
-        ]
+        }
     }
 };
 
@@ -502,6 +507,7 @@ const ShellSpec = require('shellspec');
 
 const spec = {
     kind: 'shell',
+    version: '1.0.0',
     spec: {
         main: 'docker',
         collections: {
@@ -527,9 +533,8 @@ const spec = {
                 }
             ]
         },
-        args: [
-            {
-                command: 'build',
+        commands: {
+            build: {
                 args: [
                     {
                         name: 'tag',
@@ -547,8 +552,7 @@ const spec = {
                     }
                 ]
             },
-            {
-                command: 'run',
+            run: {
                 args: [
                     {
                         name: 'interactive',
@@ -575,8 +579,7 @@ const spec = {
                     }
                 ]
             },
-            {
-                command: 'push',
+            push: {
                 args: [
                     {
                         name: 'tag',
@@ -584,7 +587,7 @@ const spec = {
                     }
                 ]
             }
-        ]
+        }
     }
 };
 
