@@ -46,8 +46,9 @@ function ShellSpec(definition, cmdVersion = 'default') {
     };
 
 
-    function getConfigPaths(prefix) {
-        return listConfig(cmdDef, main, prefix);
+    function getConfigPaths(cmd = '', prefix) {
+        const cmdPath = getCmdPath(main, cmd);
+        return listConfig(cmdDef, cmdPath, prefix);
     }
 
     function getPrompts(config = {}, cmd = '') {
@@ -419,8 +420,17 @@ function getCmdPath(main, cmd) {
         : [ main ];
 }
 
-function listConfig(spec, main, prefix) {
-    if (spec == null || typeof spec != 'object') throw new Error('something went wrong');
+function resolvePath(spec, cmdPath) {
+    if (!cmdPath.length) return spec;
+    const [ nextCmd, ...rest ] = cmdPath;
+    if (spec.commands && spec.commands[nextCmd]) return resolvePath(spec.commands[nextCmd], rest);
+    throw new Error('no');
+}
+
+function listConfig(spec, cmdPath, prefix) {
+    const [ main, ...rest ] = cmdPath;
+    const resolvedSpec = resolvePath(spec, rest);
+    if (resolvedSpec == null || typeof resolvedSpec != 'object') throw new Error('something went wrong');
     function recur(s) {
         return [
             ...(s.args || []).map(arg =>
@@ -435,7 +445,9 @@ function listConfig(spec, main, prefix) {
             }, [])
         ];
     }
-    return recur(spec).map(v => `${prefix ? `${prefix}.` : ''}${main}.${v}`);
+    return recur(resolvedSpec).map(v => `${prefix
+            ? `${prefix}.`
+            : ''}${cmdPath.join('.')}.${v}`);
 }
 
 function findInSet(testSet, tokens, type, name) {
