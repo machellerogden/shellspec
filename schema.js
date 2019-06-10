@@ -6,8 +6,9 @@ const {
     alternatives,
     any,
     object,
-    string,
     array,
+    string,
+    number,
     boolean,
     lazy
 } = Joi.bind();
@@ -46,7 +47,12 @@ const argsSchema = array().items(
         ),
         value: any(),
         default: any(),
-        choices: array().items(boolean(), string()),
+        choices: alternatives([
+            string(),
+            number(),
+            boolean(),
+            array().items(boolean(), string())
+        ]),
         with: conditionalsSchema,
         withAll: conditionalsSchema,
         without: conditionalsSchema,

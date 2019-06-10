@@ -45,18 +45,25 @@ function ShellSpec(definition, cmdVersion = 'default') {
         }
     };
 
-
-    function getConfigPaths(cmd = '', prefix) {
+    function getConfigPaths(cmd = [], pathPrefix) {
         const cmdPath = getCmdPath(main, cmd);
-        return listConfig(cmdDef, cmdPath, prefix);
+        return listArgs(cmdDef, cmdPath, pathPrefix)
+            .map(({ path }) => path);
     }
 
-    function getPrompts(config = {}, cmd = '') {
+    function getRequiredConfigPaths(cmd = [], pathPrefix) {
+        const cmdPath = getCmdPath(main, cmd);
+        return listArgs(cmdDef, cmdPath, pathPrefix)
+            .filter(({ required }) => required)
+            .map(({ path }) => path);
+    }
+
+    function getPrompts(config = {}, cmd = []) {
         const cmdPath = getCmdPath(main, cmd);
         return prompts(cmdPath, cmdSpec, { [main]: config });
     }
 
-    function getArgv(config = {}, cmd = '') {
+    function getArgv(config = {}, cmd = []) {
         const cmdPath = getCmdPath(main, cmd);
         const rawTokens = tokenize(cmdPath, clone(cmdSpec), { [main]: config });
         const validTokens = validate(rawTokens);
@@ -65,25 +72,26 @@ function ShellSpec(definition, cmdVersion = 'default') {
         return argv;
     }
 
-    async function promptedArgv(config = {}, cmd = '') {
+    async function promptedArgv(config = {}, cmd = []) {
         const prompts = getPrompts(config, cmd);
         const answers = (await inquirer.prompt(prompts))[main] || {};
         return await getArgv(merge(config, answers), cmd);
     }
 
     function spawn(config = {}, cmd, spawnOptions = { stdio: 'inherit' }) {
-        cmd = cmd || '';
+        cmd = cmd || [];
         const [ command, ...args ] = getArgv(config, cmd);
         return child_process.spawn(command, args, spawnOptions);
     }
 
-    async function promptedSpawn(cmd = '', config = {}, spawnOptions = { stdio: 'inherit' }) {
+    async function promptedSpawn(cmd = [], config = {}, spawnOptions = { stdio: 'inherit' }) {
         const [ command, ...args ] = await promptedArgv(cmd, config);
         return child_process.spawn(command, args, spawnOptions);
     }
 
     return {
         getConfigPaths,
+        getRequiredConfigPaths,
         getPrompts,
         getArgv,
         promptedArgv,
@@ -91,6 +99,8 @@ function ShellSpec(definition, cmdVersion = 'default') {
         promptedSpawn
     };
 }
+
+const primitives = new Set([ 'string', 'number', 'boolean' ]);
 
 function concat(tokens) {
     return tokens.reduce((argv, arg, i) => {
@@ -228,9 +238,7 @@ function validate(tokens) {
             if (result != null) return argv;
         }
 
-        // TODO: choices should probably support string or array for a more
-        // flexible and consistent API. Right now, only arrays are allowed.
-        if (Array.isArray(choices)) validateValue(choices, value, name, type);
+        if (choices != null) validateChoice(choices, value, name, type);
 
         return [ ...argv, arg ];
     }, []);
@@ -377,7 +385,6 @@ function standardizeToken(token) {
     return token;
 }
 
-const primitives = new Set([ 'string', 'number', 'boolean' ]);
 function kvJoin(prefix, key, value, type, delimiter, useValue) {
     key = `${prefix}${key}`;
     if (typeof useValue === 'string') useValue = primitives.has(useValue)
@@ -427,7 +434,7 @@ function resolvePath(spec, cmdPath) {
     throw new Error('no');
 }
 
-function listConfig(spec, cmdPath, prefix) {
+function listArgs(spec, cmdPath, pathPrefix) {
     const [ main, ...rest ] = cmdPath;
     const resolvedSpec = resolvePath(spec, rest);
     if (resolvedSpec == null || typeof resolvedSpec != 'object') throw new Error('something went wrong');
@@ -435,19 +442,30 @@ function listConfig(spec, cmdPath, prefix) {
         return [
             ...(s.args || []).map(arg =>
                 typeof arg === 'string'
-                    ? arg
-                    : arg.name),
+                    ? {
+                        path: arg
+                      }
+                    : {
+                        ...arg,
+                        path: arg.name,
+                      }),
             ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
                 const sub = v.commands || v.args
-                    ? recur(v).map(s => `${k}.${s}`)
+                    ? recur(v).map(arg => {
+                        arg.path = `${k}.${arg.path}`;
+                        return arg;
+                    })
                     : [];
                 return [ ...acc, ...sub ];
             }, [])
         ];
     }
-    return recur(resolvedSpec).map(v => `${prefix
-            ? `${prefix}.`
-            : ''}${cmdPath.join('.')}.${v}`);
+    return recur(resolvedSpec).map((arg) => {
+        arg.path = `${pathPrefix
+            ? `${pathPrefix}.`
+            : ''}${cmdPath.join('.')}.${arg.path}`;
+        return arg;
+    });
 }
 
 function findInSet(testSet, tokens, type, name) {
@@ -467,7 +485,8 @@ function findAllInSet(testSet, tokens, type, name) {
     return result;
 }
 
-function validateValue(choices, value, name, type) {
+function validateChoice(choices, value, name, type) {
+    if (primitives.has(choices)) choices = [ choices ];
     if (Array.isArray(value)
         ? value.reduce((a, v) => a && !choices.includes(v), true)
         : !choices.includes(value)) {

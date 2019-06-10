@@ -1008,6 +1008,55 @@ test('getConfigPaths', async t => {
     ])
 });
 
+test('getRequiredConfigPaths', async t => {
+    const { getRequiredConfigPaths } = ShellSpec({
+        kind: 'shell',
+        version: '1.0.0',
+        spec: {
+            main: "a",
+            commands: {
+                b: {
+                    args: [
+                        {
+                            name: 'c',
+                            type: 'flag',
+                            required: true
+                        }
+                    ],
+                    commands: {
+                        d: {
+                            commands: {
+                                e: {
+                                    args: [
+                                        {
+                                            name: 'f',
+                                            type: 'flag'
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                g: {
+                    args: [
+                        {
+                            name: 'h',
+                            required: true
+                        },
+                        'i'
+                    ]
+                }
+            }
+        }
+    });
+
+    t.deepEqual(getRequiredConfigPaths(), [
+        'a.b.c',
+        'a.g.h'
+    ])
+});
+
 test('versionless', async t => {
     const {
         getArgv,

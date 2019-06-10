@@ -180,9 +180,9 @@ interface Arg {
     default?: any;
 
     /**
-     * Array of valid values for given Arg.
+     * Value or array of valid values for given Arg.
      */
-    choices?: string[];
+    choices?: string | number | boolean | string[];
 
     /**
      * `name`(s) of other argument(s) which must exist for this
