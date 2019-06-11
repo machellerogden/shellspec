@@ -1002,10 +1002,14 @@ test('getConfigPaths', async t => {
     });
 
     t.deepEqual(getConfigPaths(), [
-        'a.b.c',
-        'a.b.d.e.f',
-        'a.g.h'
-    ])
+        'b.c',
+        'b.d.e.f',
+        'g.h'
+    ]);
+
+    t.deepEqual(getConfigPaths('b.d'), [
+        'b.d.e.f'
+    ]);
 });
 
 test('getRequiredConfigPaths', async t => {
@@ -1052,8 +1056,8 @@ test('getRequiredConfigPaths', async t => {
     });
 
     t.deepEqual(getRequiredConfigPaths(), [
-        'a.b.c',
-        'a.g.h'
+        'b.c',
+        'g.h'
     ])
 });
 
@@ -1105,9 +1109,9 @@ test('versionless', async t => {
     ]);
 
     t.deepEqual(getConfigPaths(), [
-        'a.b.c',
-        'a.b.d.e.f',
-        'a.g.h'
+        'b.c',
+        'b.d.e.f',
+        'g.h'
     ])
 });
 

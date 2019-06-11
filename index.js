@@ -40,31 +40,31 @@ function ShellSpec(definition, cmdVersion = 'default') {
 
     const cmdSpec = {
         commands: {
-            // NB, might need deep clone on value...
+            // NB, may need deep clone on value... need tests
             [main]: populateCollections(cmdDef, collections)
         }
     };
 
     function getConfigPaths(cmd = [], pathPrefix) {
-        const cmdPath = getCmdPath(main, cmd);
-        return listArgs(cmdDef, cmdPath, pathPrefix)
+        const cmdPath = normalizePath(cmd);
+        return listArgs({ cmdDef, cmdPath, pathPrefix })
             .map(({ path }) => path);
     }
 
     function getRequiredConfigPaths(cmd = [], pathPrefix) {
-        const cmdPath = getCmdPath(main, cmd);
-        return listArgs(cmdDef, cmdPath, pathPrefix)
+        const cmdPath = normalizePath(cmd);
+        return listArgs({ cmdDef, cmdPath, pathPrefix })
             .filter(({ required }) => required)
             .map(({ path }) => path);
     }
 
     function getPrompts(config = {}, cmd = []) {
-        const cmdPath = getCmdPath(main, cmd);
+        const cmdPath = [ main, ...normalizePath(cmd) ];
         return prompts(cmdPath, cmdSpec, { [main]: config });
     }
 
     function getArgv(config = {}, cmd = []) {
-        const cmdPath = getCmdPath(main, cmd);
+        const cmdPath = [ main, ...normalizePath(cmd) ];
         const rawTokens = tokenize(cmdPath, clone(cmdSpec), { [main]: config });
         const validTokens = validate(rawTokens);
         const concattedTokens = concat(validTokens);
@@ -124,7 +124,10 @@ function resolveVersion(versions, ver) {
     if (typeof ver === 'object') return ver;
     const version = versions[ver] || versions['default'];
     if (typeof version == 'string') return resolveVersion(versions, version);
-    // TODO: tighten up recursion exit clause
+    // TODO:
+    // Either tighten up recursion exit clause or tighten up the schema
+    // validation to prevent circular references... it's only a matter of time
+    // until this code pegs some unsuspecting CPU.
     return version;
 }
 
@@ -148,15 +151,19 @@ function tokenize(cmdPath, spec, config) {
                 if (isTemplated(arg.value)) {
                     // TODO:
                     // Find a workaround for case transform below. Introduces
-                    // non-determinism via the possibility of name collisions. Easy fix
-                    // is to force use a context object when user is writing template
-                    // strings. i.e. Use `ctx["arg-name"]` in templates instead of
-                    // `argName`. API is a bit uglier, but completely side-steps the
-                    // possibility of collisions.
+                    // non-determinism via the possibility of name collisions.
+                    // Easy fix is to force use a context object when user is
+                    // writing template strings. i.e. Use `ctx["arg-name"]` in
+                    // templates instead of `argName`. API becomes a bit uglier,
+                    // but completely side-steps the possibility of collisions.
                     //
-                    // Alternatively, we could parse template string ahead of evaluation
-                    // and apply case change at compile time. Makes a more ideal template
-                    // API but doesn't actually solve the essential problem.
+                    // Alternatively, we could parse template string ahead of
+                    // evaluation and apply case change at compile time. API
+                    // improves but it but doesn't actually solve the essential
+                    // problem and collisions are still possible.
+                    //
+                    // For now, the impetus is on the spec author to define
+                    // names which won't collide when normalized to snake case.
                     const ctx = mapKeys(config, (v, k) => snakeCase(k));
                     arg.value = Array.isArray(arg.value)
                             ? arg.value.map(v => evaluate(`\`${v}\``, ctx))
@@ -323,20 +330,6 @@ function prompts(cmdPath, spec, config, cmdKey) {
                     message,
                     type: 'input',
                     when: answers => isMissingRequiredConfig(arg, merge(config, get(answers, currentCmdKey, {})))
-
-                    // TODO:
-                    // Leaving the following in a comment for posterity.
-                    // Clean this up once we figure out a better way to handle it.
-                    //filter: v => v.split(' ').reduce((a, b, i, c) => {
-                        //if (i < c.length) {
-                            //if (b.endsWith('\\')) {
-                                //b = [ b.slice(0, -1),  c[i + 1] ].join(' ');
-                                //c.splice(i + 1, 1);
-                            //}
-                        //}
-                        //a = [ ...a, b ];
-                        //return a;
-                    //}, [])
                 };
                 if (arg.choices) {
                     prompt.type = 'list';
@@ -416,28 +409,38 @@ function kvJoin(prefix, key, value, type, delimiter, useValue) {
                 : [ key, value ];
 }
 
-function getCmdPath(main, cmd) {
-    return cmd
-        ? [
-            main,
-            ...(Array.isArray(cmd)
-                ? cmd
-                : (cmd || '').split('.'))
-          ]
-        : [ main ];
+function normalizePath(cmd) {
+    return [
+        ...(Array.isArray(cmd)
+            ? cmd
+            : (cmd || '').split('.'))
+    ];
 }
 
-function resolvePath(spec, cmdPath) {
+function resolveFromPath(spec, cmdPath) {
     if (!cmdPath.length) return spec;
     const [ nextCmd, ...rest ] = cmdPath;
-    if (spec.commands && spec.commands[nextCmd]) return resolvePath(spec.commands[nextCmd], rest);
+    if (spec.commands && spec.commands[nextCmd]) return resolveFromPath(spec.commands[nextCmd], rest);
     throw new Error('no');
 }
 
-function listArgs(spec, cmdPath, pathPrefix) {
-    const [ main, ...rest ] = cmdPath;
-    const resolvedSpec = resolvePath(spec, rest);
-    if (resolvedSpec == null || typeof resolvedSpec != 'object') throw new Error('something went wrong');
+// TODO, maybe:
+// Still looking for good ways to dry up the commonalities of the `tokenize`
+// and the `prompts` functions. `listArgs` has a pretty simple approach which
+// might help. Probably worth further consideration...
+function listArgs({
+    cmdDef,
+    cmdPath,
+    pathPrefix = [],
+    asString = true
+}) {
+    const prefix = Array.isArray(pathPrefix)
+        ? pathPrefix
+        : (typeof pathPrefix === 'string')
+            ? [ pathPrefix ]
+            : [];
+    const resolvedDef = resolveFromPath(cmdDef, cmdPath);
+    if (resolvedDef == null || typeof resolvedDef != 'object') throw new Error('something went wrong');
     function recur(s) {
         return [
             ...(s.args || []).map(arg =>
@@ -452,7 +455,9 @@ function listArgs(spec, cmdPath, pathPrefix) {
             ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
                 const sub = v.commands || v.args
                     ? recur(v).map(arg => {
-                        arg.path = `${k}.${arg.path}`;
+                        arg.path = asString
+                            ? [ k, arg.path ].join('.')
+                            : [ k, arg.path ];
                         return arg;
                     })
                     : [];
@@ -460,10 +465,11 @@ function listArgs(spec, cmdPath, pathPrefix) {
             }, [])
         ];
     }
-    return recur(resolvedSpec).map((arg) => {
-        arg.path = `${pathPrefix
-            ? `${pathPrefix}.`
-            : ''}${cmdPath.join('.')}.${arg.path}`;
+    return recur(resolvedDef).map((arg) => {
+        const p = [ ...pathPrefix, ...cmdPath, arg.path ];
+        arg.path = asString
+            ? p.join('.')
+            : p;
         return arg;
     });
 }
@@ -496,12 +502,13 @@ function validateChoice(choices, value, name, type) {
 
 function populateCollections(spec, collections) {
     // TODO:
-    // Make this actually readable and break it into generic pieces.
-    // It probably should just use a simple visitor pattern instead of this
-    // nonsense.
+    // Make this actually readable and break it into generic pieces. Sincere
+    // apologies to anyone attempting to follow the plot. Maybe a simple visitor
+    // pattern instead of this nonsense? At the very least, should kill the
+    // ternaries and make it easier to follow.
     //
-    // Sincere apologies to anyone attempting to follow the plot. In leiu of
-    // semantic and readable code, here's a description of what's happening:
+    // In leiu of semantic and readable code, here's a description of what's
+    // happening:
     //
     // 1. We pull out all "collections" from the spec merging them all into a
     //    single map. Note: spec must be properly defined to ensure globally
