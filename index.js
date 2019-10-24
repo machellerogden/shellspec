@@ -492,6 +492,11 @@ function findAllInSet(testSet, tokens, type, name) {
 }
 
 function validateChoice(choices, value, name, type) {
+    // TODO: need to find a way to support use-case where there are a set of
+    // choices, but also support for arbitrary values, such as `npm version`
+    // where the primary choices are `patch`, `minor`, `major` and we want to
+    // support a menu prompt for these but any valid semver value can also be
+    // provided. this is not supported yet but needs to be.
     if (primitives.has(choices)) choices = [ choices ];
     if (Array.isArray(value)
         ? value.reduce((a, v) => a && !choices.includes(v), true)
