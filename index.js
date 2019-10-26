@@ -506,14 +506,7 @@ function validateChoice(choices, value, name, type) {
 }
 
 function populateCollections(spec, collections) {
-    // TODO:
-    // Make this actually readable and break it into generic pieces. Sincere
-    // apologies to anyone attempting to follow the plot. Maybe a simple visitor
-    // pattern instead of this nonsense? At the very least, should kill the
-    // ternaries and make it easier to follow.
-    //
-    // In leiu of semantic and readable code, here's a description of what's
-    // happening:
+    // Here's a description of what's happening:
     //
     // 1. We pull out all "collections" from the spec merging them all into a
     //    single map. Note: spec must be properly defined to ensure globally
@@ -524,25 +517,16 @@ function populateCollections(spec, collections) {
     const acc = { ...spec };
 
     function walk(value) {
-        return typeof value === 'object'
-            ? Array.isArray(value)
-                ? value.map(v => walk(v))
-                : Object.entries(value).reduce((a, [ k, v ]) => {
-                    a[k] = (k === 'args')
-                        ? v.reduce((aa, arg) => {
-                            if (arg.type === 'collection' && collections[arg.name]) return [
-                                ...aa,
-                                ...walk(collections[arg.name])
-                            ];
-                            return [
-                                ...aa,
-                                walk(arg)
-                            ];
-                          }, [])
-                        : walk(v);
-                    return a;
-                  }, {})
-            : value;
+        return typeof value !== 'object'  ? value
+            : Array.isArray(value)        ? value.map(v => walk(v))
+            : /* default */                 Object.entries(value).reduce((a, [ k, v ]) => {
+                                                a[k] = k !== 'args'
+                                                    ? walk(v)
+                                                    : v.reduce((aa, arg) => arg.type === 'collection' && collections[arg.name]
+                                                        ? [ ...aa, ...walk(collections[arg.name]) ]
+                                                        : [ ...aa, walk(arg) ], []);
+                                               return a;
+                                            }, {})
     }
 
     return walk(acc);
