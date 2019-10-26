@@ -46,6 +46,7 @@ function ShellSpec(definition, cmdVersion = 'default') {
     };
 
     function getConfigPaths(cmd = [], pathPrefix) {
+        // TODO: collections are not hydrated ... critical issue
         const cmdPath = normalizePath(cmd);
         return listArgs({ cmdDef, cmdPath, pathPrefix })
             .map(({ path }) => path);
