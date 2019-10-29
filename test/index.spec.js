@@ -118,19 +118,15 @@ test('git rev-parse w options', async t => {
 test('simple echo', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "echo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'args',
-                            type: 'values'
-                        }
-                    ]
-                }
+        main: "echo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'args',
+                        type: 'values'
+                    }
+                ]
             }
         }
     };
@@ -151,29 +147,25 @@ test('simple echo', async t => {
 test('with 1', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'formal',
-                            type: 'option',
-                            useValue: false,
-                            with: [ 'last-name' ]
-                        },
-                        {
-                            name: 'first-name',
-                            type: 'option'
-                        },
-                        {
-                            name: 'last-name',
-                            type: 'option'
-                        }
-                    ]
-                }
+        main: "greet",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'formal',
+                        type: 'option',
+                        useValue: false,
+                        with: [ 'last-name' ]
+                    },
+                    {
+                        name: 'first-name',
+                        type: 'option'
+                    },
+                    {
+                        name: 'last-name',
+                        type: 'option'
+                    }
+                ]
             }
         }
     };
@@ -196,29 +188,25 @@ test('with 1', async t => {
 test('with 2', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'formal',
-                            type: 'option',
-                            useValue: false,
-                            with: [ 'last-name' ]
-                        },
-                        {
-                            name: 'first-name',
-                            type: 'option'
-                        },
-                        {
-                            name: 'last-name',
-                            type: 'option'
-                        }
-                    ]
-                }
+        main: "greet",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'formal',
+                        type: 'option',
+                        useValue: false,
+                        with: [ 'last-name' ]
+                    },
+                    {
+                        name: 'first-name',
+                        type: 'option'
+                    },
+                    {
+                        name: 'last-name',
+                        type: 'option'
+                    }
+                ]
             }
         }
     };
@@ -236,29 +224,25 @@ test('with 2', async t => {
 test('with 3', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'formal',
-                            type: 'option',
-                            useValue: false,
-                            with: 'last-name'
-                        },
-                        {
-                            name: 'first-name',
-                            type: 'option'
-                        },
-                        {
-                            name: 'last-name',
-                            type: 'option'
-                        }
-                    ]
-                }
+        main: "greet",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'formal',
+                        type: 'option',
+                        useValue: false,
+                        with: 'last-name'
+                    },
+                    {
+                        name: 'first-name',
+                        type: 'option'
+                    },
+                    {
+                        name: 'last-name',
+                        type: 'option'
+                    }
+                ]
             }
         }
     };
@@ -276,32 +260,28 @@ test('with 3', async t => {
 test('with all', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'a',
-                            type: 'flag',
-                            withAll: [ 'b', 'c', 'd' ]
-                        },
-                        {
-                            name: 'b',
-                            type: 'flag'
-                        },
-                        {
-                            name: 'c',
-                            type: 'flag'
-                        },
-                        {
-                            name: 'd',
-                            type: 'flag'
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'a',
+                        type: 'flag',
+                        withAll: [ 'b', 'c', 'd' ]
+                    },
+                    {
+                        name: 'b',
+                        type: 'flag'
+                    },
+                    {
+                        name: 'c',
+                        type: 'flag'
+                    },
+                    {
+                        name: 'd',
+                        type: 'flag'
+                    }
+                ]
             }
         }
     };
@@ -325,34 +305,30 @@ test('with all', async t => {
 test('with all 2', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            args: [
-                {
-                    name: 'a',
-                    type: 'flag',
-                    concatable: true,
-                    withAll: [ 'b', 'c', 'd' ]
-                },
-                {
-                    name: 'b',
-                    concatable: true,
-                    type: 'flag'
-                },
-                {
-                    name: 'c',
-                    concatable: true,
-                    type: 'flag'
-                },
-                {
-                    name: 'd',
-                    concatable: true,
-                    type: 'flag'
-                }
-            ]
-        }
+        main: "foo",
+        args: [
+            {
+                name: 'a',
+                type: 'flag',
+                concatable: true,
+                withAll: [ 'b', 'c', 'd' ]
+            },
+            {
+                name: 'b',
+                concatable: true,
+                type: 'flag'
+            },
+            {
+                name: 'c',
+                concatable: true,
+                type: 'flag'
+            },
+            {
+                name: 'd',
+                concatable: true,
+                type: 'flag'
+            }
+        ]
     };
 
     const { getArgv } = ShellSpec(spec);
@@ -374,27 +350,23 @@ test('with all 2', async t => {
 test('without 1', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            args: [
-                {
-                    name: 'casual',
-                    type: 'option',
-                    useValue: false,
-                    without: [ 'last-name' ]
-                },
-                {
-                    name: 'first-name',
-                    type: 'option'
-                },
-                {
-                    name: 'last-name',
-                    type: 'option'
-                }
-            ]
-        }
+        main: "greet",
+        args: [
+            {
+                name: 'casual',
+                type: 'option',
+                useValue: false,
+                without: [ 'last-name' ]
+            },
+            {
+                name: 'first-name',
+                type: 'option'
+            },
+            {
+                name: 'last-name',
+                type: 'option'
+            }
+        ]
     };
 
     const { getArgv } = ShellSpec(spec);
@@ -414,27 +386,23 @@ test('without 1', async t => {
 test('without 2', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            args: [
-                {
-                    name: 'casual',
-                    type: 'option',
-                    useValue: false,
-                    without: [ 'last-name' ]
-                },
-                {
-                    name: 'first-name',
-                    type: 'option'
-                },
-                {
-                    name: 'last-name',
-                    type: 'option'
-                }
-            ]
-        }
+        main: "greet",
+        args: [
+            {
+                name: 'casual',
+                type: 'option',
+                useValue: false,
+                without: [ 'last-name' ]
+            },
+            {
+                name: 'first-name',
+                type: 'option'
+            },
+            {
+                name: 'last-name',
+                type: 'option'
+            }
+        ]
     };
 
     const { getArgv } = ShellSpec(spec);
@@ -451,29 +419,25 @@ test('without 2', async t => {
 test('without 3', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "greet",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'casual',
-                            type: 'option',
-                            useValue: false,
-                            without: 'last-name'
-                        },
-                        {
-                            name: 'first-name',
-                            type: 'option'
-                        },
-                        {
-                            name: 'last-name',
-                            type: 'option'
-                        }
-                    ]
-                }
+        main: "greet",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'casual',
+                        type: 'option',
+                        useValue: false,
+                        without: 'last-name'
+                    },
+                    {
+                        name: 'first-name',
+                        type: 'option'
+                    },
+                    {
+                        name: 'last-name',
+                        type: 'option'
+                    }
+                ]
             }
         }
     };
@@ -492,30 +456,26 @@ test('without 3', async t => {
 test('concat flags', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'a',
-                            type: 'flag',
-                            concatable: true
-                        },
-                        {
-                            name: 'b',
-                            type: 'flag',
-                            concatable: true
-                        },
-                        {
-                            name: 'c',
-                            type: 'flag',
-                            concatable: true
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'a',
+                        type: 'flag',
+                        concatable: true
+                    },
+                    {
+                        name: 'b',
+                        type: 'flag',
+                        concatable: true
+                    },
+                    {
+                        name: 'c',
+                        type: 'flag',
+                        concatable: true
+                    }
+                ]
             }
         }
     };
@@ -538,29 +498,25 @@ test('concat flags', async t => {
 test('concat flags should only concat adjacent flags so as not to mess with arg order', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'a',
-                            type: 'flag',
-                            concatable: true
-                        },
-                        {
-                            name: 'b',
-                            type: 'value'
-                        },
-                        {
-                            name: 'c',
-                            type: 'flag',
-                            concatable: true
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'a',
+                        type: 'flag',
+                        concatable: true
+                    },
+                    {
+                        name: 'b',
+                        type: 'value'
+                    },
+                    {
+                        name: 'c',
+                        type: 'flag',
+                        concatable: true
+                    }
+                ]
             }
         }
     };
@@ -583,29 +539,25 @@ test('concat flags should only concat adjacent flags so as not to mess with arg 
 test('concat flags more tests', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'a',
-                            type: 'flag',
-                            concatable: true
-                        },
-                        {
-                            name: 'b',
-                            type: 'flag'
-                        },
-                        {
-                            name: 'c',
-                            type: 'flag',
-                            concatable: true
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'a',
+                        type: 'flag',
+                        concatable: true
+                    },
+                    {
+                        name: 'b',
+                        type: 'flag'
+                    },
+                    {
+                        name: 'c',
+                        type: 'flag',
+                        concatable: true
+                    }
+                ]
             }
         }
     };
@@ -628,31 +580,27 @@ test('concat flags more tests', async t => {
 test('concat flags does the right thing when useValue === true', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'a',
-                            type: 'flag',
-                            concatable: true
-                        },
-                        {
-                            name: 'b',
-                            type: 'flag',
-                            useValue: true,
-                            concatable: true
-                        },
-                        {
-                            name: 'c',
-                            type: 'flag',
-                            concatable: true
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'a',
+                        type: 'flag',
+                        concatable: true
+                    },
+                    {
+                        name: 'b',
+                        type: 'flag',
+                        useValue: true,
+                        concatable: true
+                    },
+                    {
+                        name: 'c',
+                        type: 'flag',
+                        concatable: true
+                    }
+                ]
             }
         }
     };
@@ -675,19 +623,15 @@ test('concat flags does the right thing when useValue === true', async t => {
 test('multiple same option', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            type: 'option'
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        type: 'option'
+                    }
+                ]
             }
         }
     };
@@ -708,17 +652,13 @@ test('multiple same option', async t => {
 test('multiple same flag', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            args: [
-                {
-                    name: 'b',
-                    type: 'flag'
-                }
-            ]
-        }
+        main: "foo",
+        args: [
+            {
+                name: 'b',
+                type: 'flag'
+            }
+        ]
     };
 
     const { getArgv } = ShellSpec(spec);
@@ -737,18 +677,14 @@ test('multiple same flag', async t => {
 test('multiple same flag with value', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            args: [
-                {
-                    name: 'b',
-                    type: 'flag',
-                    useValue: true
-                }
-            ]
-        }
+        main: "foo",
+        args: [
+            {
+                name: 'b',
+                type: 'flag',
+                useValue: true
+            }
+        ]
     };
 
     const { getArgv } = ShellSpec(spec);
@@ -767,24 +703,20 @@ test('multiple same flag with value', async t => {
 test('arg can specify valid values as "choices"', async t => {
 
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            type: 'option',
-                            choices: [
-                                'a',
-                                'b',
-                                'c'
-                            ]
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        type: 'option',
+                        choices: [
+                            'a',
+                            'b',
+                            'c'
+                        ]
+                    }
+                ]
             }
         }
     };
@@ -814,20 +746,16 @@ test('double dash args', async t => {
 
 test('useValue only for given type', async t => {
     const spec = {
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            type: 'option',
-                            useValue: 'string'
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        type: 'option',
+                        useValue: 'string'
+                    }
+                ]
             }
         }
     };
@@ -862,19 +790,15 @@ test('conditional printing', async t => {
 test('key can be different from name', async t => {
 
     const { getArgv } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            key: 'baz'
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        key: 'baz'
+                    }
+                ]
             }
         }
     });
@@ -885,20 +809,16 @@ test('key can be different from name', async t => {
 test('dynamic useValue does the right thing when join is specified', async t => {
 
     const { getArgv } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            useValue: 'string',
-                            join: '='
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        useValue: 'string',
+                        join: '='
+                    }
+                ]
             }
         }
     });
@@ -929,30 +849,26 @@ test('command not found', async t => {
 test('aka', async t => {
 
     const { getArgv } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            versions: {
-                default: {
-                    args: [
-                        {
-                            name: 'bar',
-                            useValue: 'number',
-                            join: '=',
-                            required: true,
-                            aka: [ 'b' ]
-                        },
-                        {
-                            name: 'b',
-                            type: 'flag',
-                            useValue: 'number',
-                            required: true,
-                            join: '',
-                            aka: 'bar'
-                        }
-                    ]
-                }
+        main: "foo",
+        versions: {
+            default: {
+                args: [
+                    {
+                        name: 'bar',
+                        useValue: 'number',
+                        join: '=',
+                        required: true,
+                        aka: [ 'b' ]
+                    },
+                    {
+                        name: 'b',
+                        type: 'flag',
+                        useValue: 'number',
+                        required: true,
+                        join: '',
+                        aka: 'bar'
+                    }
+                ]
             }
         }
     });
@@ -965,38 +881,34 @@ test('aka', async t => {
 
 test('getConfigPaths', async t => {
     const { getConfigPaths } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "a",
-            commands: {
-                b: {
-                    args: [
-                        {
-                            name: 'c',
-                            type: 'flag'
-                        }
-                    ],
-                    commands: {
-                        d: {
-                            commands: {
-                                e: {
-                                    args: [
-                                        {
-                                            name: 'f',
-                                            type: 'flag'
-                                        }
-                                    ]
-                                }
+        main: "a",
+        commands: {
+            b: {
+                args: [
+                    {
+                        name: 'c',
+                        type: 'flag'
+                    }
+                ],
+                commands: {
+                    d: {
+                        commands: {
+                            e: {
+                                args: [
+                                    {
+                                        name: 'f',
+                                        type: 'flag'
+                                    }
+                                ]
                             }
                         }
                     }
-                },
-                g: {
-                    args: [
-                        'h'
-                    ]
                 }
+            },
+            g: {
+                args: [
+                    'h'
+                ]
             }
         }
     });
@@ -1014,43 +926,39 @@ test('getConfigPaths', async t => {
 
 test('getRequiredConfigPaths', async t => {
     const { getRequiredConfigPaths } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "a",
-            commands: {
-                b: {
-                    args: [
-                        {
-                            name: 'c',
-                            type: 'flag',
-                            required: true
-                        }
-                    ],
-                    commands: {
-                        d: {
-                            commands: {
-                                e: {
-                                    args: [
-                                        {
-                                            name: 'f',
-                                            type: 'flag'
-                                        }
-                                    ]
-                                }
+        main: "a",
+        commands: {
+            b: {
+                args: [
+                    {
+                        name: 'c',
+                        type: 'flag',
+                        required: true
+                    }
+                ],
+                commands: {
+                    d: {
+                        commands: {
+                            e: {
+                                args: [
+                                    {
+                                        name: 'f',
+                                        type: 'flag'
+                                    }
+                                ]
                             }
                         }
                     }
-                },
-                g: {
-                    args: [
-                        {
-                            name: 'h',
-                            required: true
-                        },
-                        'i'
-                    ]
                 }
+            },
+            g: {
+                args: [
+                    {
+                        name: 'h',
+                        required: true
+                    },
+                    'i'
+                ]
             }
         }
     });
@@ -1066,38 +974,34 @@ test('versionless', async t => {
         getArgv,
         getConfigPaths
     } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "a",
-            commands: {
-                b: {
-                    args: [
-                        {
-                            name: 'c',
-                            type: 'flag'
-                        }
-                    ],
-                    commands: {
-                        d: {
-                            commands: {
-                                e: {
-                                    args: [
-                                        {
-                                            name: 'f',
-                                            type: 'flag'
-                                        }
-                                    ]
-                                }
+        main: "a",
+        commands: {
+            b: {
+                args: [
+                    {
+                        name: 'c',
+                        type: 'flag'
+                    }
+                ],
+                commands: {
+                    d: {
+                        commands: {
+                            e: {
+                                args: [
+                                    {
+                                        name: 'f',
+                                        type: 'flag'
+                                    }
+                                ]
                             }
                         }
                     }
-                },
-                g: {
-                    args: [
-                        'h'
-                    ]
                 }
+            },
+            g: {
+                args: [
+                    'h'
+                ]
             }
         }
     });
@@ -1117,25 +1021,21 @@ test('versionless', async t => {
 
 test('getPrompts', async t => {
     const { getPrompts } = ShellSpec({
-        kind: 'shell',
-        version: '1.0.0',
-        spec: {
-            main: "foo",
-            args: [
-                {
-                    name: 'bar',
-                    required: 'true'
-                }
-            ],
-            commands: {
-                baz: {
-                    args: [
-                        {
-                            name: 'qux',
-                            required: true
-                        }
-                    ]
-                }
+        main: "foo",
+        args: [
+            {
+                name: 'bar',
+                required: 'true'
+            }
+        ],
+        commands: {
+            baz: {
+                args: [
+                    {
+                        name: 'qux',
+                        required: true
+                    }
+                ]
             }
         }
     });

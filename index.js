@@ -12,18 +12,13 @@ const evaluate = require('./evaluate');
 const child_process = require('child_process');
 const definitionSchema = require('./schema');
 
-function ShellSpec(definition, cmdVersion = 'default') {
+function ShellSpec(spec, cmdVersion = 'default') {
     const {
         error,
         value
-    } = definitionSchema.validate(definition);
+    } = definitionSchema.validate(spec);
 
     if (error) throw new Error(error);
-
-    const {
-        spec,
-        version
-    } = definition;
 
     const {
         main,

@@ -13,9 +13,6 @@ const {
     lazy
 } = Joi.bind();
 
-const [ major ] = require('./version').split('.');
-const versionRegExp = new RegExp(`^${major}\\.?\\d+?.\\d+?`);
-
 const conditionalsSchema = alternatives([
     string(),
     array().items(string())
@@ -102,13 +99,9 @@ const versionedSpecSchema = baseSpecSchema.concat(versionsSchema);
 
 const unversionedSpecSchema = baseSpecSchema.concat(commandSchema);
 
-const definitionSchema = object({
-    kind: string().valid('shell'),
-    version: string().regex(versionRegExp).required(),
-    spec: alternatives([
-        versionedSpecSchema,
-        unversionedSpecSchema
-    ])
-});
+const specSchema = alternatives([
+    versionedSpecSchema,
+    unversionedSpecSchema
+]);
 
-module.exports = definitionSchema;
+module.exports = specSchema;

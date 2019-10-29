@@ -16,7 +16,7 @@
 # Specification
 
 The intention of ShellSpec is that any arbitrary shell command can be specified
-by implementing the `Definition` interface below.
+by implementing the interface below.
 
 > #### A Note on Descriptor Syntax
 > TypeScript is used below to describe the specification. TypeScript is prefered
@@ -26,27 +26,6 @@ by implementing the `Definition` interface below.
 > here simply to act as a descriptor syntax.
 
 ```ts
-/**
- * Top-level of spec file must implement `Definition`.
- */
-interface Definition {
-    /**
-     * Indicates to consumers that this is a ShellSpec specification.
-     */
-    kind: 'shell';
-
-    /**
-     * Version of the ShellSpec specification being implemented.
-     */
-    version: string;
-
-
-    /**
-     * Definition of entry-point command.
-     */
-    spec: Spec
-}
-
 interface BaseSpec {
 
     /**
@@ -286,18 +265,14 @@ For example, here the spec for the `echo` shell command is declared and an `echo
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'echo',
-        args: [
-            {
-                name: 'args',
-                type: 'values'
-            }
-        ]
-    }
-}
+    main: 'echo',
+    args: [
+        {
+            name: 'args',
+            type: 'values'
+        }
+    ]
+};
 
 const echo = ShellSpec(spec);
 ```
@@ -339,21 +314,17 @@ In order to demostrate this, we must make our script executable from the command
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'echo',
-        args: [
-            {
-                name: 'args',
-                type: 'values',
+    main: 'echo',
+    args: [
+        {
+            name: 'args',
+            type: 'values',
 
-                // here we add a `required` key to the spec which indicate the user should be prompted if this config value is missing
-                required: true
+            // here we add a `required` key to the spec which indicate the user should be prompted if this config value is missing
+            required: true
 
-            }
-        ]
-    }
+        }
+    ]
 };
 
 const echo = ShellSpec(spec);
@@ -384,17 +355,13 @@ The `spawn` method works the same as `getArgv` except that it will execute the r
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'echo',
-        args: [
-            {
-                name: 'args',
-                type: 'values'
-            }
-        ]
-    }
+    main: 'echo',
+    args: [
+        {
+            name: 'args',
+            type: 'values'
+        }
+    ]
 };
 
 const echo = ShellSpec(spec);
@@ -412,21 +379,17 @@ The `promptedspawn` method works the same as `promptedArgv` except that it will 
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'echo',
-        args: [
-            {
-                name: 'args',
-                type: 'values',
+    main: 'echo',
+    args: [
+        {
+            name: 'args',
+            type: 'values',
 
-                // here we add a `required` key to the spec which indicate the user should be prompted if this config value is missing
-                required: true
+            // here we add a `required` key to the spec which indicate the user should be prompted if this config value is missing
+            required: true
 
-            }
-        ]
-    }
+        }
+    ]
 };
 
 const echo = ShellSpec(spec);
@@ -447,35 +410,31 @@ Here's a small piece of what could become a full AWS CLI spec. This demostrates 
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'aws',
-        args: [
-            {
-                name: 'debug',
-                type: 'option'
-            },
-            {
-                name: 'endpoint-url',
-                type: 'option'
-            }
-        ],
-        commands: {
-            s3: {
-                commands: {
-                    cp: {
-                        args: [
-                            {
-                                name: 'src',
-                                type: 'option'
-                            },
-                            {
-                                name: 'dest',
-                                type: 'option'
-                            }
-                        ]
-                    }
+    main: 'aws',
+    args: [
+        {
+            name: 'debug',
+            type: 'option'
+        },
+        {
+            name: 'endpoint-url',
+            type: 'option'
+        }
+    ],
+    commands: {
+        s3: {
+            commands: {
+                cp: {
+                    args: [
+                        {
+                            name: 'src',
+                            type: 'option'
+                        },
+                        {
+                            name: 'dest',
+                            type: 'option'
+                        }
+                    ]
                 }
             }
         }
@@ -506,87 +465,83 @@ This partial docker spec shows one way you can used named collections as well as
 const ShellSpec = require('shellspec');
 
 const spec = {
-    kind: 'shell',
-    version: '1.0.0',
-    spec: {
-        main: 'docker',
-        collections: {
-            tag: [
+    main: 'docker',
+    collections: {
+        tag: [
+            {
+                name: 'registry',
+                type: 'variable'
+            },
+            {
+                name: 'name',
+                type: 'variable',
+                required: true
+            },
+            {
+                name: 'version',
+                type: 'variable',
+                default: 'latest'
+            },
+            {
+                name: 'tag',
+                type: 'variable',
+                value: '${registry ? `${registry}/` : ""}${name}:${version}'
+            }
+        ]
+    },
+    commands: {
+        build: {
+            args: [
                 {
-                    name: 'registry',
-                    type: 'variable'
-                },
-                {
-                    name: 'name',
-                    type: 'variable',
-                    required: true
-                },
-                {
-                    name: 'version',
-                    type: 'variable',
-                    default: 'latest'
+                    name: 'tag',
+                    type: 'collection'
                 },
                 {
                     name: 'tag',
-                    type: 'variable',
-                    value: '${registry ? `${registry}/` : ""}${name}:${version}'
+                    type: 'option',
+                    value: '${tag}'
+                },
+                {
+                    name: 'context',
+                    type: 'value',
+                    default: '.'
                 }
             ]
         },
-        commands: {
-            build: {
-                args: [
-                    {
-                        name: 'tag',
-                        type: 'collection'
-                    },
-                    {
-                        name: 'tag',
-                        type: 'option',
-                        value: '${tag}'
-                    },
-                    {
-                        name: 'context',
-                        type: 'value',
-                        default: '.'
-                    }
-                ]
-            },
-            run: {
-                args: [
-                    {
-                        name: 'interactive',
-                        type: 'option',
-                        useValue: false
-                    },
-                    {
-                        name: 'tty',
-                        type: 'option',
-                        useValue: false
-                    },
-                    {
-                        name: 'tag',
-                        type: 'collection'
-                    },
-                    {
-                        name: 'tag',
-                        type: 'value',
-                        value: '${tag}'
-                    },
-                    {
-                        "name": 'command',
-                        "type": 'value'
-                    }
-                ]
-            },
-            push: {
-                args: [
-                    {
-                        name: 'tag',
-                        type: 'collection'
-                    }
-                ]
-            }
+        run: {
+            args: [
+                {
+                    name: 'interactive',
+                    type: 'option',
+                    useValue: false
+                },
+                {
+                    name: 'tty',
+                    type: 'option',
+                    useValue: false
+                },
+                {
+                    name: 'tag',
+                    type: 'collection'
+                },
+                {
+                    name: 'tag',
+                    type: 'value',
+                    value: '${tag}'
+                },
+                {
+                    "name": 'command',
+                    "type": 'value'
+                }
+            ]
+        },
+        push: {
+            args: [
+                {
+                    name: 'tag',
+                    type: 'collection'
+                }
+            ]
         }
     }
 };
