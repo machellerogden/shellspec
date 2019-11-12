@@ -924,6 +924,39 @@ test('getConfigPaths', async t => {
     ]);
 });
 
+test('getConfigPaths - 2', async t => {
+    const { getConfigPaths } = ShellSpec(git);
+
+    t.deepEqual(getConfigPaths('status'), [
+        'status.short',
+        'status.s',
+        'status.branch',
+        'status.b',
+        'status.show-stash',
+        'status.porcelain',
+        'status.long',
+        'status.v',
+        'status.vv',
+        'status.verbose',
+        'status.q',
+        'status.quiet',
+        'status.u',
+        'status.untracked-files',
+        'status.ignore-submodules',
+        'status.ignored',
+        'status.z',
+        'status.column',
+        'status.no-column',
+        'status.ahead-behind',
+        'status.no-ahead-behind',
+        'status.renames',
+        'status.no-renames',
+        'status.find-renames',
+        'status.pathspec'
+    ]);
+
+});
+
 test('getRequiredConfigPaths', async t => {
     const { getRequiredConfigPaths } = ShellSpec({
         main: "a",

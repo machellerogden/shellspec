@@ -41,15 +41,14 @@ function ShellSpec(spec, cmdVersion = 'default') {
     };
 
     function getConfigPaths(cmd = [], pathPrefix) {
-        // TODO: collections are not hydrated ... critical issue
         const cmdPath = normalizePath(cmd);
-        return listArgs({ cmdDef, cmdPath, pathPrefix })
+        return listArgs({ cmdDef: cmdSpec.commands[main], cmdPath, pathPrefix })
             .map(({ path }) => path);
     }
 
     function getRequiredConfigPaths(cmd = [], pathPrefix) {
         const cmdPath = normalizePath(cmd);
-        return listArgs({ cmdDef, cmdPath, pathPrefix })
+        return listArgs({ cmdDef: cmdSpec.commands[main], cmdPath, pathPrefix })
             .filter(({ required }) => required)
             .map(({ path }) => path);
     }
@@ -420,6 +419,14 @@ function resolveFromPath(spec, cmdPath) {
     throw new Error('no');
 }
 
+const addPaths = (collections, args) =>
+    (args || [])
+        .map(arg =>
+            typeof arg === 'string'   ? { path: arg }
+          : arg.type === 'collection' ? addPaths(collections, collections[arg.name])
+                                      : { ...arg, path: arg.name })
+        .flat(Infinity);
+
 // TODO, maybe:
 // Still looking for good ways to dry up the commonalities of the `tokenize`
 // and the `prompts` functions. `listArgs` has a pretty simple approach which
@@ -430,24 +437,15 @@ function listArgs({
     pathPrefix = [],
     asString = true
 }) {
-    const prefix = Array.isArray(pathPrefix)
-        ? pathPrefix
-        : (typeof pathPrefix === 'string')
-            ? [ pathPrefix ]
-            : [];
+    const prefix = Array.isArray(pathPrefix)        ? pathPrefix
+                 : (typeof pathPrefix === 'string') ? [ pathPrefix ]
+                                                    : [];
     const resolvedDef = resolveFromPath(cmdDef, cmdPath);
     if (resolvedDef == null || typeof resolvedDef != 'object') throw new Error('something went wrong');
     function recur(s) {
+        const argPaths = addPaths(cmdDef.collections || [], s.args || []);
         return [
-            ...(s.args || []).map(arg =>
-                typeof arg === 'string'
-                    ? {
-                        path: arg
-                      }
-                    : {
-                        ...arg,
-                        path: arg.name,
-                      }),
+            ...argPaths,
             ...Object.entries(s.commands || {}).reduce((acc, [ k, v ]) => {
                 const sub = v.commands || v.args
                     ? recur(v).map(arg => {
